@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: liquibase/sql/1_main.sql
+  - include:
+      file: liquibase/sql/2_test_data.sql
