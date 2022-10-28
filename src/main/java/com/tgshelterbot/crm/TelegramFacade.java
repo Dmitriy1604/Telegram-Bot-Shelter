@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-
 @Service
 public class TelegramFacade {
 
@@ -44,7 +43,7 @@ public class TelegramFacade {
      *
      * @param update
      */
-    public void processUpdate(Update update) {
+    public void processUpdate (Update update) {
         Long idUser = 0L;
         String message = "Я Вас не понял, нажмите /start для возврата в главное меню";
         if (update.message() != null && update.message().chat() != null && update.message().chat().id() != null) {
@@ -54,14 +53,11 @@ public class TelegramFacade {
         }
         User user = userService.findUserOrCreate(idUser);
         logger.debug("user: {}", user);
-
         SendMessage sendMessage = new SendMessage(idUser, message);
-
         if (update.message() != null && update.message().text() != null) {
             message = update.message().text();
             logger.debug("MESSAGE: {} , idUser: {}", message, user);
         }
-
         if (message.startsWith("/start")) {
             user.setShelter(null);
             user.setStateId(null);
@@ -71,12 +67,10 @@ public class TelegramFacade {
             userService.update(user);
             return;
         }
-
         // есть callback_data
         if (update.callbackQuery() != null) {
             String tag = update.callbackQuery().data();
             logger.debug("CallbackQuery: {}", tag);
-
             // Обработка выбора языка
             /*
             if (user.getLanguage() == null) {
@@ -87,14 +81,11 @@ public class TelegramFacade {
                 return;
             }
             */
-
             // Обработка выбора приюта
             if (user.getShelter() == null) {
                 user.setShelter(Long.parseLong(tag));
-
                 DeleteMessage deleteMessage = new DeleteMessage(idUser, user.getLastResponseStatemenuId().intValue());
                 bot.execute(deleteMessage);
-
                 SendResponse execute = bot.execute(startMenu.getStartMenu(user));
                 user.setLastResponseStatemenuId(execute.message().messageId().longValue());
                 userService.update(user);
@@ -114,7 +105,6 @@ public class TelegramFacade {
                 if (menu.get().getStateIdNext() != null) {
                     user.setStateId(menu.get().getStateIdNext());
                 }
-
                 InlineKeyboardMarkup inlineMenu = inlineBuilder.getInlineMenu(menu.get());
                 logger.debug("!!!!inlineMenu::" + inlineMenu);
                 if (user.getLastResponseStatemenuId() != null) {
