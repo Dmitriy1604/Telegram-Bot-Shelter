@@ -50,6 +50,10 @@ public class InlineMenu {
     @Column(name = "priority")
     private Integer priority;
 
+    @Column(name = "special_state")
+    @Enumerated(EnumType.STRING)
+    private UserStateSpecial userStateSpecial;
+
     public Long getId() {
         return id;
     }
