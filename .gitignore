@@ -33,4 +33,3 @@ build/
 .vscode/
 /app.properties
 /app-dev.properties
-/application.properties
