@@ -158,3 +158,41 @@ CREATE INDEX inline_menu_language_shelter_state ON public.inline_menu
 
 ALTER TABLE public.inline_menu
     OWNER TO postgres;
+
+--changeset samael:60
+ALTER TABLE public.inline_menu
+    ADD COLUMN special_state TEXT;
+
+COMMENT ON COLUMN public.inline_menu.special_state
+    IS 'Специальный статус/действие';
+
+--changeset samael:70
+CREATE TABLE public.message_for_delete (
+                                           id BIGSERIAL,
+                                           telegram_user_id BIGINT NOT NULL,
+                                           message_id INTEGER NOT NULL,
+                                           CONSTRAINT message_for_delete_pkey PRIMARY KEY(id),
+                                           CONSTRAINT message_for_delete_fk FOREIGN KEY (telegram_user_id)
+                                               REFERENCES public.users(telegram_id)
+                                               ON DELETE NO ACTION
+                                               ON UPDATE NO ACTION
+                                               NOT DEFERRABLE
+)
+    WITH (oids = false);
+
+COMMENT ON TABLE public.message_for_delete
+    IS 'Сообщения для удаления';
+
+COMMENT ON COLUMN public.message_for_delete.id
+    IS 'id';
+
+ALTER TABLE public.message_for_delete
+    OWNER TO postgres;
+
+--changeset samael:71
+
+ALTER TABLE public.users
+    ADD COLUMN previous_state_id BIGINT;
+
+COMMENT ON COLUMN public.users.previous_state_id
+    IS 'Предыдуший статус';

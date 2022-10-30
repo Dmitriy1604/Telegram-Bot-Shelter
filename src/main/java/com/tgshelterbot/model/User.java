@@ -32,6 +32,10 @@ public class User {
     @Column(name = "state_id")
     private Long stateId;
 
+    //Используем для возврата в прошлое меню, если были специальные статусы
+    @Column(name = "previous_state_id")
+    private Long previousStateId;
+
     @Column(name = "report_id")
     private Long reportId;
 
@@ -53,93 +57,6 @@ public class User {
     @Column(name = "dt_create")
     private OffsetDateTime dtCreate;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getTelegramId() {
-        return telegramId;
-    }
-
-    public void setTelegramId(Long telegramId) {
-        this.telegramId = telegramId;
-    }
-
-    public Long getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(Long language) {
-        this.language = language;
-    }
-
-    public Long getShelter() {
-        return shelter;
-    }
-
-    public void setShelter(Long shelter) {
-        this.shelter = shelter;
-    }
-
-    public Long getStateId() {
-        return stateId;
-    }
-
-    public void setStateId(Long stateId) {
-        this.stateId = stateId;
-    }
-
-    public Long getReportId() {
-        return reportId;
-    }
-
-    public void setReportId(Long reportId) {
-        this.reportId = reportId;
-    }
-
-    public Long getLastResponseStatemenuId() {
-        return lastResponseStatemenuId;
-    }
-
-    public void setLastResponseStatemenuId(Long lastResponseStatemenuId) {
-        this.lastResponseStatemenuId = lastResponseStatemenuId;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
-
-    public OffsetDateTime getDtCreate() {
-        return dtCreate;
-    }
-
-    public void setDtCreate(OffsetDateTime dtCreate) {
-        this.dtCreate = dtCreate;
-    }
 
     @Override
     public boolean equals(Object o) {

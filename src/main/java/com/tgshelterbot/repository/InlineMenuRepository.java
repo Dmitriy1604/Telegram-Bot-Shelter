@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface InlineMenuRepository extends JpaRepository<InlineMenu, Long> {
 
     Optional<InlineMenu> findFirstByLanguageIdAndAndShelterIdAndQuestion(Long language, Long shelter, String question);
+    Optional<InlineMenu> findFirstByLanguageIdAndAndShelterIdAndTagCallback(Long language, Long shelter, String tag);
     List<InlineMenu> findAllByStateId(Long stateId);
     Optional<InlineMenu> findFirstByTagCallback(String tag);
 }

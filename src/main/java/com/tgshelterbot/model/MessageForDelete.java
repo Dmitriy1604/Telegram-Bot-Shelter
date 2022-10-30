@@ -2,40 +2,34 @@ package com.tgshelterbot.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "user_state")
+@Table(name = "message_for_delete")
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class UserState {
+public class MessageForDelete {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name")
-    @Type(type = "org.hibernate.type.TextType")
-    private String name;
+    @Column(name = "telegram_user_id")
+    private Long telegramUser;
 
-    @Column(name = "tag_special")
-    @Enumerated(EnumType.STRING)
-    private UserStateSpecial tagSpecial;
-
-    @Column(name = "shelter_id")
-    private Long shelterId;
+    @Column(name = "message_id")
+    private Integer messageId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        UserState userState = (UserState) o;
-        return id != null && Objects.equals(id, userState.id);
+        MessageForDelete that = (MessageForDelete) o;
+        return id != null && Objects.equals(id, that.id);
     }
 
     @Override
