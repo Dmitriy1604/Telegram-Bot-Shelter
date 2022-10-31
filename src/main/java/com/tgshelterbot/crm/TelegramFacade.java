@@ -14,7 +14,6 @@ import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.InlineMenuRepository;
-import com.tgshelterbot.repository.MessageForDeleteRepository;
 import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +34,9 @@ public class TelegramFacade {
     private final InlineBuilder inlineBuilder;
     private final InlineMenuRepository inlineMenuRepository;
     private final SpecialService specialService;
+    private final SupportService supportService;
 
-    public TelegramFacade(TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, UserService userService, InlineBuilder inlineBuilder, InlineMenuRepository inlineMenuRepository, SpecialService specialService) {
+    public TelegramFacade(TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, UserService userService, InlineBuilder inlineBuilder, InlineMenuRepository inlineMenuRepository, SpecialService specialService, SupportService supportService) {
         this.bot = bot;
         this.startMenu = startMenu;
         this.shelterMenu = shelterMenu;
@@ -44,6 +44,7 @@ public class TelegramFacade {
         this.inlineBuilder = inlineBuilder;
         this.inlineMenuRepository = inlineMenuRepository;
         this.specialService = specialService;
+        this.supportService = supportService;
     }
 
     /**
@@ -93,6 +94,12 @@ public class TelegramFacade {
             bot.execute(new SendMessage(idUser, "Чат закончен, спасибки").replyMarkup(new ReplyKeyboardRemove()));
             sendMessage = startMenu.getStartMenu(user);
             isReadyToSend = true;
+        }
+
+        // Отвечает сотрудник чата поддержки. Не логируем, ничего не сохраняем
+        if (!isReadyToSend && supportService.isSupportChat(update)) {
+            bot.execute(supportService.sendToUser(update));
+            return;
         }
 
         // Обработка специальных статусов

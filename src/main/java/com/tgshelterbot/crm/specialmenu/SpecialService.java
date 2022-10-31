@@ -6,6 +6,7 @@ import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.tgshelterbot.crm.SupportService;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserState;
@@ -27,12 +28,14 @@ public class SpecialService {
 
     private final UserStateRepository userStateRepository;
     private final UserService userService;
+    private final SupportService supportService;
     private final TelegramBot bot;
     private final StartMenu startMenu;
 
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, TelegramBot bot, StartMenu startMenu) {
+    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu) {
         this.userStateRepository = userStateRepository;
         this.userService = userService;
+        this.supportService = supportService;
         this.bot = bot;
         this.startMenu = startMenu;
     }
@@ -59,7 +62,7 @@ public class SpecialService {
             }
         }
 
-        String message = "/start";
+        String message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
         if (update.message() != null) {
             message = update.message().text();
         }
@@ -74,11 +77,12 @@ public class SpecialService {
 
         //Обработка переписки в чате
         if (userState.getTagSpecial().equals(SUPPORT_CHAT_STARTED)) {
-            return new SendMessage(user.getTelegramId(), "Ваше сообщение принято, ждите, к вам уже выехали специалисты")
-                    .replyMarkup(new ReplyKeyboardMarkup(
-                            new KeyboardButton("\uD83D\uDD1A EXIT"))
-                            .resizeKeyboard(true)
-                            .selective(true));
+            return supportService.sendToSupport(update, user);
+//            return new SendMessage(user.getTelegramId(), "Ваше сообщение принято, ждите, к вам уже выехали специалисты")
+//                    .replyMarkup(new ReplyKeyboardMarkup(
+//                            new KeyboardButton("\uD83D\uDD1A EXIT"))
+//                            .resizeKeyboard(true)
+//                            .selective(true));
         }
         if (userState.getTagSpecial().equals(REPORT_STARTED)) {
             //Обработка отчетов
