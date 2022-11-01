@@ -1,6 +1,7 @@
 package com.tgshelterbot.repository;
 
 import com.tgshelterbot.model.InlineMenu;
+import com.tgshelterbot.model.UserState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +13,6 @@ public interface InlineMenuRepository extends JpaRepository<InlineMenu, Long> {
 
     Optional<InlineMenu> findFirstByLanguageIdAndAndShelterIdAndQuestion(Long language, Long shelter, String question);
     Optional<InlineMenu> findFirstByLanguageIdAndAndShelterIdAndTagCallback(Long language, Long shelter, String tag);
-    List<InlineMenu> findAllByStateId(Long stateId);
+    List<InlineMenu> findAllByStateId(UserState stateId);
     Optional<InlineMenu> findFirstByTagCallback(String tag);
 }

@@ -6,6 +6,7 @@ import com.tgshelterbot.crm.InlineBuilder;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.repository.InlineMenuRepository;
+import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class StartMenu {
     }
 
     public SendMessage getStartMenu(@NotNull User user) {
+//        user.setStateId(userStateRepository.findById(1L).get());
+//        userService.update(user);
         // Проверим на выбор языка, выдадим список языков
         if (user.getLanguage() == null) {
             return languageMenu.getLanguageMenu(user);
@@ -51,10 +54,7 @@ public class StartMenu {
             inlineMenu = menuOptional.get();
             defaultMsg = menuOptional.get().getAnswer();
             user.setStateId(inlineMenu.getStateIdNext());
-        } else {
-            inlineMenu.setStateId(1L);
         }
-
 
         InlineKeyboardMarkup keyboardMarkup = inlineBuilder.getInlineMenu(inlineMenu);
         System.out.println("inlineMenu = " + keyboardMarkup);
