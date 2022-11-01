@@ -1,6 +1,9 @@
 package com.tgshelterbot.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
@@ -41,98 +44,16 @@ public class InlineMenu {
     @Type(type = "org.hibernate.type.TextType")
     private String button;
 
-    @Column(name = "state_id")
-    private Long stateId;
+    @JoinColumn(name = "state_id")
+    @OneToOne
+    private UserState stateId;
 
-    @Column(name = "state_id_next")
-    private Long stateIdNext;
+    @JoinColumn(name = "state_id_next")
+    @OneToOne
+    private UserState stateIdNext;
 
     @Column(name = "priority")
     private Integer priority;
-
-    @Column(name = "special_state")
-    @Enumerated(EnumType.STRING)
-    private UserStateSpecial userStateSpecial;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(Long languageId) {
-        this.languageId = languageId;
-    }
-
-    public Long getShelterId() {
-        return shelterId;
-    }
-
-    public void setShelterId(Long shelterId) {
-        this.shelterId = shelterId;
-    }
-
-    public String getTagCallback() {
-        return tagCallback;
-    }
-
-    public void setTagCallback(String tagCallback) {
-        this.tagCallback = tagCallback;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
-
-    public String getButton() {
-        return button;
-    }
-
-    public void setButton(String button) {
-        this.button = button;
-    }
-
-    public Long getStateId() {
-        return stateId;
-    }
-
-    public void setStateId(Long stateId) {
-        this.stateId = stateId;
-    }
-
-    public Long getStateIdNext() {
-        return stateIdNext;
-    }
-
-    public void setStateIdNext(Long stateIdNext) {
-        this.stateIdNext = stateIdNext;
-    }
-
-    public Integer getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Integer priority) {
-        this.priority = priority;
-    }
 
     @Override
     public boolean equals(Object o) {
