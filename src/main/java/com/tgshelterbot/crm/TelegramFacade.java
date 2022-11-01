@@ -17,8 +17,6 @@ import com.tgshelterbot.repository.InlineMenuRepository;
 import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -36,8 +34,9 @@ public class TelegramFacade {
     private final InlineBuilder inlineBuilder;
     private final InlineMenuRepository inlineMenuRepository;
     private final SpecialService specialService;
+    private final SupportService supportService;
 
-    public TelegramFacade(TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, UserService userService, InlineBuilder inlineBuilder, InlineMenuRepository inlineMenuRepository, SpecialService specialService) {
+    public TelegramFacade(TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, UserService userService, InlineBuilder inlineBuilder, InlineMenuRepository inlineMenuRepository, SpecialService specialService, SupportService supportService) {
         this.bot = bot;
         this.startMenu = startMenu;
         this.shelterMenu = shelterMenu;
@@ -45,17 +44,19 @@ public class TelegramFacade {
         this.inlineBuilder = inlineBuilder;
         this.inlineMenuRepository = inlineMenuRepository;
         this.specialService = specialService;
+        this.supportService = supportService;
     }
 
     /**
-     * Для различных вариантов сообщений будем уходить в свои обработчики
+     * Фасад, основная логика построения меню бота и обработки статусов
+     * По окончанию метода, отправляем сообщение или редактируем, сохраняем ответ полученный от телеги
      *
-     * @param update
+     * @param update Update
      */
     public void processUpdate(Update update) {
+        // Готовы отправить сообщение. Отправка и обработка ответа, в самом конце метода и обновление юзера
         boolean isReadyToSend = false;
         Long idUser = 0L;
-        logger.warn("idUser {}", idUser);
         String message = "Я Вас не понял, нажмите /start для возврата в главное меню";
         SendResponse execute = null;
         EditMessageText editInlineMessageText = null;
@@ -67,8 +68,9 @@ public class TelegramFacade {
             idUser = update.callbackQuery().from().id();
         }
         User user = userService.findUserOrCreate(idUser);
-        //logger.debug("user: {}", user);
+        logger.trace("idUser {}", idUser);
 
+        // Дефотное сообщение, если мы не распознали команду пользователя
         SendMessage sendMessage = new SendMessage(idUser, message);
 
 
@@ -77,6 +79,7 @@ public class TelegramFacade {
             logger.debug("MESSAGE: {} , idUser: {}", message, user);
         }
 
+        // Обработка команды /start, начальная точка работы бота
         if (message.startsWith("/start")) {
             user.setShelter(null);
             user.setStateId(null);
@@ -86,16 +89,23 @@ public class TelegramFacade {
             isReadyToSend = true;
         }
 
+        // Выйти в главное меню, с удалением ReplyKeyboard???
         if (message.startsWith("\uD83D\uDD1A EXIT")) {
             bot.execute(new SendMessage(idUser, "Чат закончен, спасибки").replyMarkup(new ReplyKeyboardRemove()));
             sendMessage = startMenu.getStartMenu(user);
             isReadyToSend = true;
         }
 
+        // Отвечает сотрудник чата поддержки. Не логируем, ничего не сохраняем
+        if (!isReadyToSend && supportService.isSupportChat(update)) {
+            bot.execute(supportService.sendToUser(update));
+            return;
+        }
+
         // Обработка специальных статусов
         SendMessage specialStatus = null;
         if (!isReadyToSend) {
-            specialStatus = specialService.checkSpecialStatus(user, update, null);
+            specialStatus = specialService.checkSpecialStatus(user, update);
             if (specialStatus != null) {
                 sendMessage = specialStatus;
                 isReadyToSend = true;
@@ -132,7 +142,7 @@ public class TelegramFacade {
                             user.getLanguage(),
                             tag
                     );
-
+            // Получаем меню из базы по TagCallback
             if (!isReadyToSend && menuOptional.isPresent()) {
                 InlineMenu menu = menuOptional.get();
                 message = menu.getAnswer();
@@ -143,25 +153,29 @@ public class TelegramFacade {
                 if (menu.getStateIdNext() != null) {
                     user.setStateId(menu.getStateIdNext());
                 }
-                /*TODO Сделать обработку для специальных статусов получения телефона, репортов и т.п.*/
+                // Обработка кнопки меню, когда есть специальный статус(действие/меню) по нажатию на кнопку
                 if (menu.getUserStateSpecial() != null && !menu.getUserStateSpecial().equals(UserStateSpecial.MAIN)) {
-                    sendMessage = specialService.checkSpecialStatus(user, update, menu);
+                    sendMessage = specialService.checkSpecialStatusInMenu(user, menu.getUserStateSpecial(), menu);
                     isReadyToSend = true;
                 }
+                // Формируем динамическое меню
                 if (!isReadyToSend) {
                     InlineKeyboardMarkup inlineMenu = inlineBuilder.getInlineMenu(menu);
+                    // Есть клавиатура, которую мы должны отредактировать
                     if (user.getLastResponseStatemenuId() != null) {
-                        // Если есть клавиатура
+                        // собрали клавиатуру и она имеет кнопки
                         if (inlineMenu.inlineKeyboard().length > 0) {
                             editInlineMessageText = new EditMessageText(idUser,
                                     user.getLastResponseStatemenuId().intValue(),
                                     message).replyMarkup(inlineMenu);
                         } else {
+                            // Клавиатура не имеет кнопок, отредактируем текст прошлого сообщения
                             editInlineMessageText = new EditMessageText(idUser,
                                     user.getLastResponseStatemenuId().intValue(),
                                     message);
                         }
                     } else {
+                        // Или клавиатуры для редактирования, отправим новую
                         sendMessage = new SendMessage(idUser, message).replyMarkup(inlineMenu);
                     }
                 }

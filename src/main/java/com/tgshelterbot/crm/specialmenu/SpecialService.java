@@ -4,8 +4,9 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.SendResponse;
+import com.tgshelterbot.crm.SupportService;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserState;
@@ -27,31 +28,31 @@ public class SpecialService {
 
     private final UserStateRepository userStateRepository;
     private final UserService userService;
+    private final SupportService supportService;
     private final TelegramBot bot;
     private final StartMenu startMenu;
 
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, TelegramBot bot, StartMenu startMenu) {
+    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu) {
         this.userStateRepository = userStateRepository;
         this.userService = userService;
+        this.supportService = supportService;
         this.bot = bot;
         this.startMenu = startMenu;
     }
 
-    /*TODO  разбить на 2 метода, START/END
-     *  1 - когда еще нет меню
-     *  2 - когда есть меню
-     * */
-    public SendMessage checkSpecialStatus(@NotNull User user, Update update, InlineMenu menu) {
+    /**
+     * Метод обрабатывает сообщения, если у пользователя запущен специальный статус
+     *
+     * @param user   user
+     * @param update telegram update
+     * @return SendMessage, или null когда специального статуса нет и мы идем по базовой логике
+     */
+    public SendMessage checkSpecialStatus(@NotNull User user, Update update) {
         if (user.getStateId() == null) {
             return null;
         }
 
         UserState userState = new UserState();
-        String message = "/start";
-        if (update.message() != null) {
-            message = update.message().text();
-        }
-
         if (user.getStateId() != null) {
             Optional<UserState> state = userStateRepository.findById(user.getStateId());
             if (state.isPresent()) {
@@ -61,35 +62,61 @@ public class SpecialService {
             }
         }
 
-        if (userState.getTagSpecial().equals(MAIN) || userState.getTagSpecial() == null) {
-            return null;
+        String message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
+        if (update.message() != null) {
+            message = update.message().text();
         }
-
-        if (userState.getTagSpecial().equals(GET_PHONE)) {
-            /*TODO  переписать красиво*/
-            Optional<UserState> state = userStateRepository.findFirstByShelterIdAndTagSpecial(user.getShelter(), GET_PHONE_END);
-            if (state.isPresent()) {
-                user.setStateId(state.get().getId());
-                userService.update(user);
-            }
-            userService.update(user);
-            return new SendMessage(user.getTelegramId(), menu.getAnswer());
-        }
-        if (userState.getTagSpecial().equals(GET_PHONE_END)) {
-            //Обработка телефона
+        //Обработка телефона
+        if (userState.getTagSpecial().equals(GET_PHONE_STARTED)) {
             user.setPhone(message);
             userService.update(user);
             bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
             return startMenu.getStartMenu(user);
         }
 
+
+        //Обработка переписки в чате
+        if (userState.getTagSpecial().equals(SUPPORT_CHAT_STARTED)) {
+            return supportService.sendToSupport(update, user);
+//            return new SendMessage(user.getTelegramId(), "Ваше сообщение принято, ждите, к вам уже выехали специалисты")
+//                    .replyMarkup(new ReplyKeyboardMarkup(
+//                            new KeyboardButton("\uD83D\uDD1A EXIT"))
+//                            .resizeKeyboard(true)
+//                            .selective(true));
+        }
+        if (userState.getTagSpecial().equals(REPORT_STARTED)) {
+            //Обработка отчетов
+        }
+        return null;
+    }
+
+
+    /**
+     * Метод обрабатывает первичное нажатие из inline меню, и запускает процесс уже специальной обработки
+     *
+     * @param user         user
+     * @param stateSpecial enum
+     * @param menu         InlineMenu
+     * @return SendMessage
+     */
+    public SendMessage checkSpecialStatusInMenu(@NotNull User user, UserStateSpecial stateSpecial, InlineMenu menu) {
+        SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+        if (stateSpecial.equals(GET_PHONE)) {
+            deleteOldMenu(user);
+            Long userStateId = getUserStateId(user.getShelter(), GET_PHONE_STARTED);
+            user.setStateId(userStateId);
+            userService.update(user);
+            return new SendMessage(user.getTelegramId(), menu.getAnswer());
+        }
+
+
         //Обработка начала чата
-        if (userState.getTagSpecial().equals(SUPPORT_CHAT)) {
-            Optional<UserState> state = userStateRepository.findFirstByShelterIdAndTagSpecial(user.getShelter(), SUPPORT_CHAT_STARTED);
-            if (state.isPresent()) {
-                user.setStateId(state.get().getId());
-                userService.update(user);
-            }
+        if (stateSpecial.equals(SUPPORT_CHAT)) {
+            deleteOldMenu(user);
+            Long userStateId = getUserStateId(user.getShelter(), SUPPORT_CHAT_STARTED);
+            user.setStateId(userStateId);
+            userService.update(user);
+
             return new SendMessage(user.getTelegramId(), "Для завершения чата нажмите кнопку EXIT")
                     .replyMarkup(new ReplyKeyboardMarkup(
                             new KeyboardButton("\uD83D\uDD1A EXIT"))
@@ -97,18 +124,22 @@ public class SpecialService {
                             .selective(true));
 
         }
-        //Обработка переписки в чате
-        if (userState.getTagSpecial().equals(SUPPORT_CHAT_STARTED)) {
-            return new SendMessage(user.getTelegramId(), "Ваше сообщение принято, ждите, к вам уже выехали специалисты")
-                    .replyMarkup(new ReplyKeyboardMarkup(
-                            new KeyboardButton("\uD83D\uDD1A EXIT"))
-                            .resizeKeyboard(true)
-                            .selective(true));
-        }
-        if (userState.getTagSpecial().equals(REPORT)) {
+
+        if (stateSpecial.equals(REPORT)) {
             //Обработка отчетов
         }
-        return null;
+        return sendMessage;
+    }
+
+    private Long getUserStateId(Long shelterId, UserStateSpecial stateSpecial) {
+        return userStateRepository.findFirstByShelterIdAndTagSpecial(shelterId, stateSpecial).map(UserState::getId).orElse(null);
+    }
+
+    private void deleteOldMenu(User user) {
+        if (user.getLastResponseStatemenuId() != null) {
+            DeleteMessage deleteMessage = new DeleteMessage(user.getTelegramId(), user.getLastResponseStatemenuId().intValue());
+            bot.execute(deleteMessage);
+        }
     }
 
 }
