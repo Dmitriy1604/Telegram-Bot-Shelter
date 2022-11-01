@@ -189,10 +189,6 @@ COMMENT ON COLUMN public.message_for_delete.id
 ALTER TABLE public.message_for_delete
     OWNER TO postgres;
 
---changeset samael:71
-
-ALTER TABLE public.users
-    ADD COLUMN previous_state_id BIGINT;
-
-COMMENT ON COLUMN public.users.previous_state_id
-    IS 'Предыдуший статус';
+--changeset samael:75
+ALTER TABLE public.inline_menu
+    DROP COLUMN IF EXISTS special_state;

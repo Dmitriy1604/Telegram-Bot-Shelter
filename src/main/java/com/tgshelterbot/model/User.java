@@ -1,6 +1,9 @@
 package com.tgshelterbot.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
@@ -29,12 +32,9 @@ public class User {
     @Column(name = "shelter_id")
     private Long shelter;
 
-    @Column(name = "state_id")
-    private Long stateId;
-
-    //Используем для возврата в прошлое меню, если были специальные статусы
-    @Column(name = "previous_state_id")
-    private Long previousStateId;
+    @JoinColumn(name = "state_id")
+    @OneToOne
+    private UserState stateId;
 
     @Column(name = "report_id")
     private Long reportId;

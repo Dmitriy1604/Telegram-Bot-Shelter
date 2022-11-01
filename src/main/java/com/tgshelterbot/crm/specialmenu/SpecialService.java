@@ -52,15 +52,7 @@ public class SpecialService {
             return null;
         }
 
-        UserState userState = new UserState();
-        if (user.getStateId() != null) {
-            Optional<UserState> state = userStateRepository.findById(user.getStateId());
-            if (state.isPresent()) {
-                userState = state.get();
-            } else {
-                return null;
-            }
-        }
+        UserState userState = user.getStateId();
 
         String message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
         if (update.message() != null) {
@@ -78,11 +70,6 @@ public class SpecialService {
         //Обработка переписки в чате
         if (userState.getTagSpecial().equals(SUPPORT_CHAT_STARTED)) {
             return supportService.sendToSupport(update, user);
-//            return new SendMessage(user.getTelegramId(), "Ваше сообщение принято, ждите, к вам уже выехали специалисты")
-//                    .replyMarkup(new ReplyKeyboardMarkup(
-//                            new KeyboardButton("\uD83D\uDD1A EXIT"))
-//                            .resizeKeyboard(true)
-//                            .selective(true));
         }
         if (userState.getTagSpecial().equals(REPORT_STARTED)) {
             //Обработка отчетов
@@ -103,8 +90,8 @@ public class SpecialService {
         SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
         if (stateSpecial.equals(GET_PHONE)) {
             deleteOldMenu(user);
-            Long userStateId = getUserStateId(user.getShelter(), GET_PHONE_STARTED);
-            user.setStateId(userStateId);
+            UserState userState = getUserState(user.getShelter(), GET_PHONE_STARTED);
+            user.setStateId(userState);
             userService.update(user);
             return new SendMessage(user.getTelegramId(), menu.getAnswer());
         }
@@ -113,8 +100,8 @@ public class SpecialService {
         //Обработка начала чата
         if (stateSpecial.equals(SUPPORT_CHAT)) {
             deleteOldMenu(user);
-            Long userStateId = getUserStateId(user.getShelter(), SUPPORT_CHAT_STARTED);
-            user.setStateId(userStateId);
+            UserState userState = getUserState(user.getShelter(), SUPPORT_CHAT_STARTED);
+            user.setStateId(userState);
             userService.update(user);
 
             return new SendMessage(user.getTelegramId(), "Для завершения чата нажмите кнопку EXIT")
@@ -131,8 +118,8 @@ public class SpecialService {
         return sendMessage;
     }
 
-    private Long getUserStateId(Long shelterId, UserStateSpecial stateSpecial) {
-        return userStateRepository.findFirstByShelterIdAndTagSpecial(shelterId, stateSpecial).map(UserState::getId).orElse(null);
+    private UserState getUserState(Long shelterId, UserStateSpecial stateSpecial) {
+        return userStateRepository.findFirstByShelterIdAndTagSpecial(shelterId, stateSpecial).orElse(null);
     }
 
     private void deleteOldMenu(User user) {

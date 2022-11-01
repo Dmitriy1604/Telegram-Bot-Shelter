@@ -12,7 +12,6 @@ import com.tgshelterbot.crm.specialmenu.SpecialService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.InlineMenuRepository;
 import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
@@ -104,7 +103,7 @@ public class TelegramFacade {
 
         // Обработка специальных статусов
         SendMessage specialStatus = null;
-        if (!isReadyToSend) {
+        if (!isReadyToSend && user.getStateId() != null && user.getStateId().getTagSpecial() != null) {
             specialStatus = specialService.checkSpecialStatus(user, update);
             if (specialStatus != null) {
                 sendMessage = specialStatus;
@@ -146,16 +145,13 @@ public class TelegramFacade {
             if (!isReadyToSend && menuOptional.isPresent()) {
                 InlineMenu menu = menuOptional.get();
                 message = menu.getAnswer();
-                // Сетим статус
-                if (menu.getStateId() != null) {
-                    user.setStateId(menu.getStateId());
-                }
+                // Сетим новый статус
                 if (menu.getStateIdNext() != null) {
                     user.setStateId(menu.getStateIdNext());
                 }
                 // Обработка кнопки меню, когда есть специальный статус(действие/меню) по нажатию на кнопку
-                if (menu.getUserStateSpecial() != null && !menu.getUserStateSpecial().equals(UserStateSpecial.MAIN)) {
-                    sendMessage = specialService.checkSpecialStatusInMenu(user, menu.getUserStateSpecial(), menu);
+                if (user.getStateId().getTagSpecial() != null) {
+                    sendMessage = specialService.checkSpecialStatusInMenu(user, user.getStateId().getTagSpecial(), menu);
                     isReadyToSend = true;
                 }
                 // Формируем динамическое меню
@@ -186,11 +182,13 @@ public class TelegramFacade {
         try {
             if (editInlineMessageText != null) {
                 execute = (SendResponse) bot.execute(editInlineMessageText);
-            } else {
+            } else if (sendMessage != null) {
                 execute = bot.execute(sendMessage);
             }
             logger.debug("execute, {}", execute);
-            user.setLastResponseStatemenuId(execute.message().messageId().longValue());
+            if (execute != null) {
+                user.setLastResponseStatemenuId(execute.message().messageId().longValue());
+            }
         } catch (Exception e) {
             logger.error("Exception: {}", e.getMessage());
         }

@@ -32,8 +32,8 @@ public class ShelterMenu {
     public SendMessage getShelterMenu(@NotNull User user) {
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
 
-        List<Shelter> languageList = shelterRepository.findAll();
-        languageList.forEach(language -> {
+        List<Shelter> shelterList = shelterRepository.findAll();
+        shelterList.forEach(language -> {
                     keyboardMarkup.addRow(new InlineKeyboardButton(language.getName())
                             .callbackData(language.getId().toString()));
                 }

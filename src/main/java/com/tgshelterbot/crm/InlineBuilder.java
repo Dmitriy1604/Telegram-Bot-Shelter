@@ -3,6 +3,7 @@ package com.tgshelterbot.crm;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.tgshelterbot.model.InlineMenu;
+import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.repository.InlineMenuRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +24,16 @@ public class InlineBuilder {
 
     public InlineKeyboardMarkup getInlineMenu(InlineMenu menu) {
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
-        Long id;
+        UserState state;
 
         if (menu.getStateIdNext() != null) {
-            id = menu.getStateIdNext();
+            state = menu.getStateIdNext();
         } else {
-            id = menu.getStateId();
+            state = menu.getStateId();
         }
 
-        List<InlineMenu> answerList = inlineMenuRepository.findAllByStateId(id);
+        List<InlineMenu> answerList = inlineMenuRepository.findAllByStateId(state);
+        log.warn(answerList.toString());
         answerList.sort(Comparator.comparing(InlineMenu::getPriority));
         answerList.forEach(telegramAnswer -> {
             if (telegramAnswer.getButton() != null
