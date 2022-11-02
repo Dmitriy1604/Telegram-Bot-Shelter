@@ -33,7 +33,6 @@ public class InlineBuilder {
         }
 
         List<InlineMenu> answerList = inlineMenuRepository.findAllByStateId(state);
-        log.warn(answerList.toString());
         answerList.sort(Comparator.comparing(InlineMenu::getPriority));
         answerList.forEach(telegramAnswer -> {
             if (telegramAnswer.getButton() != null
