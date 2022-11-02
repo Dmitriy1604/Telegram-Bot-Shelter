@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.Optional;
 
 import static com.tgshelterbot.model.UserStateSpecial.*;
 
@@ -31,13 +30,15 @@ public class SpecialService {
     private final SupportService supportService;
     private final TelegramBot bot;
     private final StartMenu startMenu;
+    private final ShelterMenu shelterMenu;
 
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu) {
+    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu) {
         this.userStateRepository = userStateRepository;
         this.userService = userService;
         this.supportService = supportService;
         this.bot = bot;
         this.startMenu = startMenu;
+        this.shelterMenu = shelterMenu;
     }
 
     /**
@@ -52,14 +53,28 @@ public class SpecialService {
             return null;
         }
 
-        UserState userState = user.getStateId();
+        UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
 
         String message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
         if (update.message() != null) {
             message = update.message().text();
         }
+        //Даем меню с выбором приюта
+        if (stateSpecial.equals(SELECT_SHELTER)) {
+            user.setStateId(userStateRepository.findFirstByTagSpecial(SELECT_SHELTER_STARTED).orElse(null)); /*TODO написать эксепшены*/
+            userService.update(user);
+            return startMenu.getStartMenu(user);
+        }
+        // Выбираем приют
+        if (stateSpecial.equals(SELECT_SHELTER_STARTED)) {
+            deleteOldMenu(user);
+            String tag = update.callbackQuery().data();
+            shelterMenu.updateShelter(user, tag);
+            return startMenu.getStartMenu(user);
+        }
+
         //Обработка телефона
-        if (userState.getTagSpecial().equals(GET_PHONE_STARTED)) {
+        if (stateSpecial.equals(GET_PHONE_STARTED)) {
             user.setPhone(message);
             userService.update(user);
             bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
@@ -68,10 +83,10 @@ public class SpecialService {
 
 
         //Обработка переписки в чате
-        if (userState.getTagSpecial().equals(SUPPORT_CHAT_STARTED)) {
+        if (stateSpecial.equals(SUPPORT_CHAT_STARTED)) {
             return supportService.sendToSupport(update, user);
         }
-        if (userState.getTagSpecial().equals(REPORT_STARTED)) {
+        if (stateSpecial.equals(REPORT_STARTED)) {
             //Обработка отчетов
         }
         return null;
@@ -82,12 +97,14 @@ public class SpecialService {
      * Метод обрабатывает первичное нажатие из inline меню, и запускает процесс уже специальной обработки
      *
      * @param user         user
-     * @param stateSpecial enum
+     * @param update update
      * @param menu         InlineMenu
      * @return SendMessage
      */
-    public SendMessage checkSpecialStatusInMenu(@NotNull User user, UserStateSpecial stateSpecial, InlineMenu menu) {
+    public SendMessage checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
         SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+        UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
+
         if (stateSpecial.equals(GET_PHONE)) {
             deleteOldMenu(user);
             UserState userState = getUserState(user.getShelter(), GET_PHONE_STARTED);

@@ -1,7 +1,11 @@
 package com.tgshelterbot.model;
 
 public enum UserStateSpecial {
-    MAIN,
+    SELECT_LANGUAGE,
+    SELECT_LANGUAGE_STARTED,
+    SELECT_SHELTER,
+    SELECT_SHELTER_STARTED,
+
     SUPPORT_CHAT,
     SUPPORT_CHAT_STARTED,
     GET_PHONE,

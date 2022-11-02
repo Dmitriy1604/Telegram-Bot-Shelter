@@ -7,13 +7,15 @@ import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
-import com.tgshelterbot.crm.specialmenu.ShelterMenu;
 import com.tgshelterbot.crm.specialmenu.SpecialService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
+import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.InlineMenuRepository;
+import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.UserService;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,29 +24,21 @@ import java.util.Optional;
 
 
 @Service
+@AllArgsConstructor
 public class TelegramFacade {
 
     private final Logger logger = LoggerFactory.getLogger(TelegramFacade.class);
 
     private final TelegramBot bot;
     private final StartMenu startMenu;
-    private final ShelterMenu shelterMenu;
-    private final UserService userService;
     private final InlineBuilder inlineBuilder;
-    private final InlineMenuRepository inlineMenuRepository;
+    private final UserService userService;
     private final SpecialService specialService;
     private final SupportService supportService;
+    private final InlineMenuRepository inlineMenuRepository;
+    private final UserStateRepository userStateRepository;
 
-    public TelegramFacade(TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, UserService userService, InlineBuilder inlineBuilder, InlineMenuRepository inlineMenuRepository, SpecialService specialService, SupportService supportService) {
-        this.bot = bot;
-        this.startMenu = startMenu;
-        this.shelterMenu = shelterMenu;
-        this.userService = userService;
-        this.inlineBuilder = inlineBuilder;
-        this.inlineMenuRepository = inlineMenuRepository;
-        this.specialService = specialService;
-        this.supportService = supportService;
-    }
+
 
     /**
      * Фасад, основная логика построения меню бота и обработки статусов
@@ -72,7 +66,6 @@ public class TelegramFacade {
         // Дефотное сообщение, если мы не распознали команду пользователя
         SendMessage sendMessage = new SendMessage(idUser, message);
 
-
         if (update.message() != null && update.message().text() != null) {
             message = update.message().text();
             logger.debug("MESSAGE: {} , idUser: {}", message, user);
@@ -81,11 +74,9 @@ public class TelegramFacade {
         // Обработка команды /start, начальная точка работы бота
         if (message.startsWith("/start")) {
             user.setShelter(null);
-            user.setStateId(null);
+            user.setStateId(userStateRepository.findFirstByTagSpecial(UserStateSpecial.SELECT_SHELTER).orElse(null));
             user.setLastResponseStatemenuId(null);
             bot.execute(new SendMessage(idUser, "Стартовое хаюшки тебе").replyMarkup(new ReplyKeyboardRemove()));
-            sendMessage = startMenu.getStartMenu(user);
-            isReadyToSend = true;
         }
 
         // Выйти в главное меню, с удалением ReplyKeyboard???
@@ -111,37 +102,22 @@ public class TelegramFacade {
             }
         }
 
-
         // есть callback_data
         if (!isReadyToSend && update.callbackQuery() != null) {
             String tag = update.callbackQuery().data();
             logger.debug("CallbackQuery: {}", tag);
 
-            // Обработка выбора языка
-            /*
-            if (user.getLanguage() == null) {
-                user.setLanguage(Long.parseLong(tag));
-                SendResponse execute = bot.execute(startMenu.getStartMenu(user));
-                user.setLastResponseStatemenuId(execute.message().messageId().longValue());
-                userService.update(user);
-                return;
-            }
-            */
-
-            // Обработка выбора приюта
-            if (user.getShelter() == null) {
-                shelterMenu.updateShelter(user, tag);
-                sendMessage = startMenu.getStartMenu(user);
-                isReadyToSend = true;
-            }
-
             Optional<InlineMenu> menuOptional = inlineMenuRepository
-                    .findFirstByLanguageIdAndAndShelterIdAndTagCallback(
+                    .findFirstByLanguageIdAndShelterIdAndTagCallback(
                             user.getLanguage(),
-                            user.getLanguage(),
+                            user.getShelter(),
                             tag
                     );
             // Получаем меню из базы по TagCallback
+            if (menuOptional.isEmpty() && user.getStateId().getTagSpecial() != null) {
+                sendMessage = specialService.checkSpecialStatus(user, update);
+                isReadyToSend = true;
+            }
             if (!isReadyToSend && menuOptional.isPresent()) {
                 InlineMenu menu = menuOptional.get();
                 message = menu.getAnswer();
@@ -151,7 +127,7 @@ public class TelegramFacade {
                 }
                 // Обработка кнопки меню, когда есть специальный статус(действие/меню) по нажатию на кнопку
                 if (user.getStateId().getTagSpecial() != null) {
-                    sendMessage = specialService.checkSpecialStatusInMenu(user, user.getStateId().getTagSpecial(), menu);
+                    sendMessage = specialService.checkSpecialStatusInMenu(user, update, menu);
                     isReadyToSend = true;
                 }
                 // Формируем динамическое меню
