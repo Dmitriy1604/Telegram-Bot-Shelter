@@ -45,7 +45,7 @@ public class StartMenu {
 
         String defaultMsg = "";
         InlineMenu inlineMenu = new InlineMenu();
-        Optional<InlineMenu> menuOptional = inlineMenuRepository.findFirstByLanguageIdAndAndShelterIdAndQuestion(user.getLanguage(), user.getShelter(),
+        Optional<InlineMenu> menuOptional = inlineMenuRepository.findFirstByLanguageIdAndShelterIdAndQuestion(user.getLanguage(), user.getShelter(),
                 "/start");
         if (menuOptional.isPresent()) {
             inlineMenu = menuOptional.get();
