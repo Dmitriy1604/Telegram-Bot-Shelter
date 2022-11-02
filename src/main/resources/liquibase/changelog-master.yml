@@ -9,5 +9,7 @@ databaseChangeLog:
       file: liquibase/sql/100_user_state_and_inline_menu.sql
   - include:
       file: liquibase/sql/101_triggers.sql
+  - include:
+      file: liquibase/sql/corrections_2_3.sql
 
 

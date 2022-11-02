@@ -25,8 +25,8 @@ COMMENT ON COLUMN public.user_state.name
 COMMENT ON COLUMN public.user_state.tag_special
     IS 'Специальный статус меню';
 
-ALTER TABLE public.user_state
-    OWNER TO postgres;
+-- ALTER TABLE public.user_state
+--     OWNER TO postgres;
 
 INSERT INTO public.user_state ("id", "name", "tag_special", "shelter_id")
 VALUES
@@ -112,8 +112,8 @@ COMMENT ON COLUMN public.inline_menu.state_id_next
 CREATE INDEX inline_menu_language_shelter_state ON public.inline_menu
     USING btree (language_id, shelter_id, state_id);
 
-ALTER TABLE public.inline_menu
-    OWNER TO postgres;
+-- ALTER TABLE public.inline_menu
+--     OWNER TO postgres;
 
 /* Data for the 'public.inline_menu' table  (Records 1 - 57) */
 
@@ -176,3 +176,27 @@ VALUES
     (1, 2, E'15_well_being_cat_ru', NULL, E'done', E'Описать общее состояние.', 15, 11, 2),
     (1, 2, E'15_behavior_cat_ru', NULL, E'done', E'Описать изменения поведения.', 15, 11, 3),
     (1, 2, E'15_back_to_shelter_cat_ru', NULL, E'done', E'Назад.', 15, 11, 4);
+
+--changeSet Filimonov Sergey:1
+--comment corrections in menu behavior
+
+ALTER SEQUENCE public.user_state_id_seq
+    INCREMENT 1 MINVALUE 1
+        MAXVALUE 9223372036854775807 START 1
+        RESTART 17 CACHE 1
+        NO CYCLE;
+
+--changeSet Filimonov Sergey:2
+--comment corrections in menu behavior
+
+INSERT INTO public.user_state ("name", tag_special, shelter_id)
+VALUES ('Главное меню => Как взять кота из приюта =) Подробнее', null, 2),
+       ( 'Главное меню => Как взять собаку из приюта =) Подробнее', null, 1);
+
+--changeSet Filimonov Sergey:3
+--comment corrections in menu behavior
+
+INSERT INTO public.inline_menu
+(language_id, shelter_id, tag_callback, question, answer, button, state_id, state_id_next, priority)
+VALUES (1, 2, '15_back_to_how_to_cat_ru', null, ' Выберите пункт меню', 'Назад.', 17, 14, 0),
+       (1, 1, '17_back_to_how_to_dog_ru', null, ' Выберите пункт меню', 'Назад.', 18, 4, 0);
