@@ -5,3 +5,9 @@ databaseChangeLog:
       file: liquibase/sql/2_dog_data.sql
   - include:
       file: liquibase/sql/3_cat_data.sql
+  - include:
+      file: liquibase/sql/100_user_state_and_inline_menu.sql
+  - include:
+      file: liquibase/sql/101_triggers.sql
+
+

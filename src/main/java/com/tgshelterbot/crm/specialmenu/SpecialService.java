@@ -107,7 +107,7 @@ public class SpecialService {
 
         if (stateSpecial.equals(GET_PHONE)) {
             deleteOldMenu(user);
-            UserState userState = getUserState(user.getShelter(), GET_PHONE_STARTED);
+            UserState userState = getUserState(GET_PHONE_STARTED);
             user.setStateId(userState);
             userService.update(user);
             return new SendMessage(user.getTelegramId(), menu.getAnswer());
@@ -117,7 +117,7 @@ public class SpecialService {
         //Обработка начала чата
         if (stateSpecial.equals(SUPPORT_CHAT)) {
             deleteOldMenu(user);
-            UserState userState = getUserState(user.getShelter(), SUPPORT_CHAT_STARTED);
+            UserState userState = getUserState(SUPPORT_CHAT_STARTED);
             user.setStateId(userState);
             userService.update(user);
 
@@ -135,8 +135,8 @@ public class SpecialService {
         return sendMessage;
     }
 
-    private UserState getUserState(Long shelterId, UserStateSpecial stateSpecial) {
-        return userStateRepository.findFirstByShelterIdAndTagSpecial(shelterId, stateSpecial).orElse(null);
+    private UserState getUserState(UserStateSpecial stateSpecial) {
+        return userStateRepository.findFirstByTagSpecial(stateSpecial).orElse(null);
     }
 
     private void deleteOldMenu(User user) {
