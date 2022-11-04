@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
+import com.pengrad.telegrambot.request.SendDocument;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.tgshelterbot.crm.SupportService;
 import com.tgshelterbot.model.InlineMenu;
@@ -12,6 +13,7 @@ import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.UserStateRepository;
+import com.tgshelterbot.service.FileService;
 import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +33,16 @@ public class SpecialService {
     private final TelegramBot bot;
     private final StartMenu startMenu;
     private final ShelterMenu shelterMenu;
+    private final FileService fileService;
 
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu) {
+    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, FileService fileService) {
         this.userStateRepository = userStateRepository;
         this.userService = userService;
         this.supportService = supportService;
         this.bot = bot;
         this.startMenu = startMenu;
         this.shelterMenu = shelterMenu;
+        this.fileService = fileService;
     }
 
     /**
@@ -88,6 +92,9 @@ public class SpecialService {
         }
         if (stateSpecial.equals(REPORT_STARTED)) {
             //Обработка отчетов
+            String localPathTelegramFile = fileService.getLocalPathTelegramFile(update);
+            SendDocument sendDocument = fileService.sendDocument(user.getTelegramId(), localPathTelegramFile, "Спасибки, мы получили ваш отчет");
+            bot.execute(sendDocument);
         }
         return null;
     }

@@ -49,27 +49,15 @@ public class TelegramFacade {
     public void processUpdate(Update update) {
         // Готовы отправить сообщение. Отправка и обработка ответа, в самом конце метода и обновление юзера
         boolean isReadyToSend = false;
-        Long idUser = 0L;
-        String message = "Я Вас не понял, нажмите /start для возврата в главное меню";
+        String message = getMessage(update);
+        Long idUser = userService.getIdUser(update);
+        User user = userService.findUserOrCreate(idUser);
         SendResponse execute = null;
         EditMessageText editInlineMessageText = null;
-
-
-        if (update.message() != null && update.message().chat() != null && update.message().chat().id() != null) {
-            idUser = update.message().chat().id();
-        } else if (update.callbackQuery() != null) {
-            idUser = update.callbackQuery().from().id();
-        }
-        User user = userService.findUserOrCreate(idUser);
         logger.trace("idUser {}", idUser);
 
         // Дефотное сообщение, если мы не распознали команду пользователя
         SendMessage sendMessage = new SendMessage(idUser, message);
-
-        if (update.message() != null && update.message().text() != null) {
-            message = update.message().text();
-            logger.debug("MESSAGE: {} , idUser: {}", message, user);
-        }
 
         // Обработка команды /start, начальная точка работы бота
         if (message.startsWith("/start")) {
@@ -169,6 +157,14 @@ public class TelegramFacade {
             logger.error("Exception: {}", e.getMessage());
         }
         userService.update(user);
+    }
+
+    private String getMessage(Update update) {
+        String message = "Я Вас не понял, нажмите /start для возврата в главное меню";
+        if (update.message() != null && update.message().text() != null) {
+            message = update.message().text();
+        }
+        return message;
     }
 
 }

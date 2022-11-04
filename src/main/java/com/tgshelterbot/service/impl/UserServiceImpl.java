@@ -2,7 +2,6 @@ package com.tgshelterbot.service.impl;
 
 import com.pengrad.telegrambot.model.Update;
 import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.UserRepository;
 import com.tgshelterbot.repository.UserStateRepository;
@@ -22,6 +21,17 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository, UserStateRepository userStateRepository) {
         this.userRepository = userRepository;
         this.userStateRepository = userStateRepository;
+    }
+
+    @Override
+    public Long getIdUser(Update update) {
+        Long idUser = 0L;
+        if (update.message() != null && update.message().chat() != null && update.message().chat().id() != null) {
+            idUser =  update.message().chat().id();
+        } else if (update.callbackQuery() != null) {
+            idUser = update.callbackQuery().from().id();
+        }
+        return idUser;
     }
 
 
@@ -48,7 +58,5 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    private Long getUserId(Update update) {
-        return update.message().chat().id();
-    }
+
 }
