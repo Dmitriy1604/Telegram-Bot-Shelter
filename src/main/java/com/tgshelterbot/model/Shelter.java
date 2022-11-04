@@ -1,11 +1,18 @@
 package com.tgshelterbot.model;
 
+import lombok.*;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "shelters")
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class Shelter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +39,16 @@ public class Shelter {
         this.name = name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Shelter shelter = (Shelter) o;
+        return id != null && Objects.equals(id, shelter.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
