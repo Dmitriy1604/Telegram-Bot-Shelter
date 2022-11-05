@@ -3,6 +3,7 @@ package com.tgshelterbot.dto;
 import com.tgshelterbot.model.UserStateSpecial;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @AllArgsConstructor
@@ -12,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 public class UserStateDto {
     private Long id;
-    @NotNull
+    @NotBlank
     private String name;
     private UserStateSpecial stateSpecial;
     @NotNull

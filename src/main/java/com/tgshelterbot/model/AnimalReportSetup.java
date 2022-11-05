@@ -26,6 +26,7 @@ public class AnimalReportSetup {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "report_type_id", nullable = false)
     @ToString.Exclude
+    @Enumerated(EnumType.STRING)
     private AnimalReportType reportType;
 
     @OneToMany(mappedBy = "animalReportSetup")

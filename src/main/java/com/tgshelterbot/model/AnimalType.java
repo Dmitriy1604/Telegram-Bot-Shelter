@@ -33,10 +33,6 @@ public class AnimalType {
     @Column(name = "days_for_test")
     private Integer daysForTest;
 
-    @OneToMany(mappedBy = "animalType")
-    @ToString.Exclude
-    private Set<Animal> animals = new LinkedHashSet<>();
-
 
     @Override
     public boolean equals(Object o) {

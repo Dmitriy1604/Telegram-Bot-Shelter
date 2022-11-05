@@ -55,6 +55,7 @@ public class AnimalReportData {
     private String localFileName;
 
     @Column(name = "state", columnDefinition = "report_state")
+    @Enumerated(EnumType.STRING)
     private AnimalReportStateEnum state;
 
     @Override
