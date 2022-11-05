@@ -11,5 +11,7 @@ databaseChangeLog:
       file: liquibase/sql/101_triggers.sql
   - include:
       file: liquibase/sql/corrections_2_3.sql
+  - include:
+      file: liquibase/sql/110_Animals_Reports.sql
 
 
