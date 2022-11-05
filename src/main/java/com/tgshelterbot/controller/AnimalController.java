@@ -45,7 +45,7 @@ public class AnimalController {
                     description = "Create animal",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ShelterDto.class)
+                            schema = @Schema(implementation = AnimalDto.class)
                     )
             ),
             @ApiResponse(
@@ -83,7 +83,7 @@ public class AnimalController {
                     description = "Update animal by id",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ShelterDto.class)
+                            schema = @Schema(implementation = AnimalDto.class)
                     )
             ),
             @ApiResponse(

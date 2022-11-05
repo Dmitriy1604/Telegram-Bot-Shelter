@@ -2,28 +2,33 @@ package com.tgshelterbot.crm.specialmenu;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendDocument;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.tgshelterbot.crm.InlineBuilder;
 import com.tgshelterbot.crm.SupportService;
-import com.tgshelterbot.model.InlineMenu;
-import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserState;
-import com.tgshelterbot.model.UserStateSpecial;
+import com.tgshelterbot.model.*;
+import com.tgshelterbot.repository.AnimalReportTypeRepository;
 import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.FileService;
 import com.tgshelterbot.service.UserService;
+import com.tgshelterbot.service.impl.ReportServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 
+import java.util.LinkedHashSet;
+
 import static com.tgshelterbot.model.UserStateSpecial.*;
 
 @Service
+@RequiredArgsConstructor
 public class SpecialService {
     private final Logger log = LoggerFactory.getLogger(SpecialService.class);
 
@@ -34,16 +39,9 @@ public class SpecialService {
     private final StartMenu startMenu;
     private final ShelterMenu shelterMenu;
     private final FileService fileService;
-
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, FileService fileService) {
-        this.userStateRepository = userStateRepository;
-        this.userService = userService;
-        this.supportService = supportService;
-        this.bot = bot;
-        this.startMenu = startMenu;
-        this.shelterMenu = shelterMenu;
-        this.fileService = fileService;
-    }
+    private final InlineBuilder inlineBuilder;
+    private final AnimalReportTypeRepository animalReportTypeRepository;
+    private final ReportServiceImpl reportService;
 
     /**
      * Метод обрабатывает сообщения, если у пользователя запущен специальный статус
@@ -55,6 +53,10 @@ public class SpecialService {
     public SendMessage checkSpecialStatus(@NotNull User user, Update update) {
         if (user.getStateId() == null) {
             return null;
+        }
+        String tag = "";
+        if (update.callbackQuery() != null) {
+            tag = update.callbackQuery().data();
         }
 
         UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
@@ -72,7 +74,6 @@ public class SpecialService {
         // Выбираем приют
         if (stateSpecial.equals(SELECT_SHELTER_STARTED)) {
             deleteOldMenu(user);
-            String tag = update.callbackQuery().data();
             shelterMenu.updateShelter(user, tag);
             return startMenu.getStartMenu(user);
         }
@@ -90,12 +91,29 @@ public class SpecialService {
         if (stateSpecial.equals(SUPPORT_CHAT_STARTED)) {
             return supportService.sendToSupport(update, user);
         }
+//        if (stateSpecial.equals(REPORT_STARTED)) {
+//            //Обработка отчетов
+//            String localPathTelegramFile = fileService.getLocalPathTelegramFile(update);
+//            SendDocument sendDocument = fileService.sendDocument(user.getTelegramId(), localPathTelegramFile, "Спасибки, мы получили ваш отчет");
+//            bot.execute(sendDocument);
+//        }
+
         if (stateSpecial.equals(REPORT_STARTED)) {
             //Обработка отчетов
-            String localPathTelegramFile = fileService.getLocalPathTelegramFile(update);
-            SendDocument sendDocument = fileService.sendDocument(user.getTelegramId(), localPathTelegramFile, "Спасибки, мы получили ваш отчет");
-            bot.execute(sendDocument);
+            //---------------
+            Animal animal = reportService.getAnimal(user);
+            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+            reportSetByAnimalType.stream().forEach(System.out::println);
+            log.error("?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
+            SendMessage sendMessage = new SendMessage(user.getTelegramId(), animal.getName()
+                    + " - выберите пункт меню, для отправки отчета, уже что то отправляли \n"
+                    + "тег:" + tag)
+                    .replyMarkup(inlineMenuReport);
+            return sendMessage;
+
         }
+
         return null;
     }
 
@@ -103,9 +121,9 @@ public class SpecialService {
     /**
      * Метод обрабатывает первичное нажатие из inline меню, и запускает процесс уже специальной обработки
      *
-     * @param user         user
+     * @param user   user
      * @param update update
-     * @param menu         InlineMenu
+     * @param menu   InlineMenu
      * @return SendMessage
      */
     public SendMessage checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
@@ -138,7 +156,20 @@ public class SpecialService {
 
         if (stateSpecial.equals(REPORT)) {
             //Обработка отчетов
+            UserState userState = getUserState(REPORT_STARTED);
+            user.setStateId(userState);
+            userService.update(user);
+            //---------------
+            Animal animal = reportService.getAnimal(user);
+            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+
+            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
+            sendMessage = new SendMessage(user.getTelegramId(), animal.getName() + " - выберите пункт меню, для отправки отчета")
+                    .replyMarkup(inlineMenuReport);
+
         }
+
+
         return sendMessage;
     }
 

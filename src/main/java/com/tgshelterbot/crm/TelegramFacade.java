@@ -9,17 +9,18 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
 import com.tgshelterbot.crm.specialmenu.SpecialService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
-import com.tgshelterbot.model.InlineMenu;
-import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserStateSpecial;
+import com.tgshelterbot.model.*;
+import com.tgshelterbot.repository.AnimalReportTypeRepository;
 import com.tgshelterbot.repository.InlineMenuRepository;
 import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.UserService;
+import com.tgshelterbot.service.impl.ReportServiceImpl;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 
@@ -38,6 +39,8 @@ public class TelegramFacade {
     private final InlineMenuRepository inlineMenuRepository;
     private final UserStateRepository userStateRepository;
 
+    private final AnimalReportTypeRepository animalReportTypeRepository;
+    private final ReportServiceImpl reportService;
 
 
     /**
@@ -65,6 +68,16 @@ public class TelegramFacade {
             user.setStateId(userStateRepository.findFirstByTagSpecial(UserStateSpecial.SELECT_SHELTER).orElse(null));
             user.setLastResponseStatemenuId(null);
             bot.execute(new SendMessage(idUser, "Стартовое хаюшки тебе").replyMarkup(new ReplyKeyboardRemove()));
+        }
+        if (message.startsWith("/test")){
+            logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            Animal animal = reportService.getAnimal(user);
+            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+            reportSetByAnimalType.stream().forEach(System.out::println);
+            logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
+            bot.execute(new SendMessage(idUser, "Сейчас случится магия!").replyMarkup(inlineMenuReport));
+            return;
         }
 
         // Выйти в главное меню, с удалением ReplyKeyboard???
@@ -146,6 +159,9 @@ public class TelegramFacade {
         try {
             if (editInlineMessageText != null) {
                 execute = (SendResponse) bot.execute(editInlineMessageText);
+                if (execute != null) {
+                    user.setLastResponseStatemenuId(execute.message().messageId().longValue());
+                }
             } else if (sendMessage != null) {
                 execute = bot.execute(sendMessage);
             }

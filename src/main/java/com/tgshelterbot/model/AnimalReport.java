@@ -2,6 +2,7 @@ package com.tgshelterbot.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -15,16 +16,15 @@ import java.util.Set;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@org.hibernate.annotations.TypeDef(name = "report_state", typeClass = PostgreSQLEnumType.class)
 public class AnimalReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "animal_id", nullable = false)
-    @ToString.Exclude
-    private Animal animal;
+    @Column(name = "animal_id")
+    private Long animal;
 
     @Column(name = "dt_create")
     private OffsetDateTime dtCreate;
@@ -32,11 +32,9 @@ public class AnimalReport {
     @Column(name = "dt_accept")
     private OffsetDateTime dtAccept;
 
-    @OneToMany(mappedBy = "animalReport")
-    @ToString.Exclude
-    private Set<AnimalReportData> animalReportData = new LinkedHashSet<>();
-
-    @Column(name = "state", columnDefinition = "report_state not null")
+    @Column(name = "state", columnDefinition = "report_state")
+    @Enumerated(EnumType.STRING)
+    @Type(type = "report_state")
     private AnimalReportStateEnum state;
 
     @Override

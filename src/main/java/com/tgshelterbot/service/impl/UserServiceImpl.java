@@ -1,6 +1,7 @@
 package com.tgshelterbot.service.impl;
 
 import com.pengrad.telegrambot.model.Update;
+import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.UserRepository;
