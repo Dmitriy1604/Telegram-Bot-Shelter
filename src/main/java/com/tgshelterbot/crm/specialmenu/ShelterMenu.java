@@ -40,7 +40,7 @@ public class ShelterMenu {
         );
 
         log.debug("ShelterMenu: {}", keyboardMarkup);
-        return new SendMessage(user.getTelegramId(), "Выберите приют").replyMarkup(keyboardMarkup);
+        return new SendMessage(user.getTelegramId(),"Выберите приют").replyMarkup(keyboardMarkup);
     }
 
     public void updateShelter(User user, String tag) {

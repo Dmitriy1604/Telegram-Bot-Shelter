@@ -14,6 +14,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@org.hibernate.annotations.TypeDef(name = "report_state", typeClass = PostgreSQLEnumType.class)
 public class AnimalReportData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,6 +56,8 @@ public class AnimalReportData {
     private String localFileName;
 
     @Column(name = "state", columnDefinition = "report_state")
+    @Enumerated(EnumType.STRING)
+    @Type(type = "report_state")
     private AnimalReportStateEnum state;
 
     @Override

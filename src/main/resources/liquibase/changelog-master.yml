@@ -13,5 +13,7 @@ databaseChangeLog:
       file: liquibase/sql/corrections_2_3.sql
   - include:
       file: liquibase/sql/110_Animals_Reports.sql
+  - include:
+      file: liquibase/sql/111_fix.sql
 
 

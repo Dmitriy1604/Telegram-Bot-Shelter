@@ -1,6 +1,9 @@
 package com.tgshelterbot.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
@@ -14,26 +17,22 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@org.hibernate.annotations.TypeDef(name = "animal_state", typeClass = PostgreSQLEnumType.class)
 public class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "animal_type_id", nullable = false)
-    @ToString.Exclude
-    private AnimalType animalType;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "shelter_id", nullable = false)
-    @ToString.Exclude
-    private Shelter shelter;
+    @Column(name = "animal_type_id", nullable = false)
+    private Long animalTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "telegram_id")
-    @ToString.Exclude
-    private User user;
+    @Column(name = "shelter_id", nullable = false)
+    private Long shelterId;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "dt_create", nullable = false)
     private OffsetDateTime dtCreate;
@@ -48,6 +47,8 @@ public class Animal {
     private String name;
 
     @Column(name = "state", columnDefinition = "animal_state")
+    @Enumerated(EnumType.STRING)
+    @Type(type = "animal_state")
     private AnimalStateEnum state;
 
     public enum AnimalStateEnum {

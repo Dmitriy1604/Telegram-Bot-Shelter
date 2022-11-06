@@ -2,48 +2,49 @@ package com.tgshelterbot.crm.specialmenu;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
-import com.pengrad.telegrambot.request.SendDocument;
+import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.SendResponse;
+import com.tgshelterbot.crm.InlineBuilder;
+import com.tgshelterbot.crm.MessageSender;
 import com.tgshelterbot.crm.SupportService;
-import com.tgshelterbot.model.InlineMenu;
-import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserState;
-import com.tgshelterbot.model.UserStateSpecial;
+import com.tgshelterbot.model.*;
+import com.tgshelterbot.repository.AnimalReportTypeRepository;
 import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.FileService;
 import com.tgshelterbot.service.UserService;
+import com.tgshelterbot.service.impl.ReportServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 
+import java.util.LinkedHashSet;
+
 import static com.tgshelterbot.model.UserStateSpecial.*;
 
 @Service
+@RequiredArgsConstructor
 public class SpecialService {
     private final Logger log = LoggerFactory.getLogger(SpecialService.class);
 
     private final UserStateRepository userStateRepository;
     private final UserService userService;
+    private final MessageSender messageSender;
     private final SupportService supportService;
     private final TelegramBot bot;
     private final StartMenu startMenu;
     private final ShelterMenu shelterMenu;
     private final FileService fileService;
-
-    public SpecialService(UserStateRepository userStateRepository, UserService userService, SupportService supportService, TelegramBot bot, StartMenu startMenu, ShelterMenu shelterMenu, FileService fileService) {
-        this.userStateRepository = userStateRepository;
-        this.userService = userService;
-        this.supportService = supportService;
-        this.bot = bot;
-        this.startMenu = startMenu;
-        this.shelterMenu = shelterMenu;
-        this.fileService = fileService;
-    }
+    private final InlineBuilder inlineBuilder;
+    private final AnimalReportTypeRepository animalReportTypeRepository;
+    private final ReportServiceImpl reportService;
 
     /**
      * Метод обрабатывает сообщения, если у пользователя запущен специальный статус
@@ -52,9 +53,13 @@ public class SpecialService {
      * @param update telegram update
      * @return SendMessage, или null когда специального статуса нет и мы идем по базовой логике
      */
-    public SendMessage checkSpecialStatus(@NotNull User user, Update update) {
+    public EditMessageText checkSpecialStatus(@NotNull User user, Update update) {
         if (user.getStateId() == null) {
             return null;
+        }
+        String tag = "";
+        if (update.callbackQuery() != null) {
+            tag = update.callbackQuery().data();
         }
 
         UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
@@ -65,37 +70,56 @@ public class SpecialService {
         }
         //Даем меню с выбором приюта
         if (stateSpecial.equals(SELECT_SHELTER)) {
-            user.setStateId(userStateRepository.findFirstByTagSpecial(SELECT_SHELTER_STARTED).orElse(null)); /*TODO написать эксепшены*/
+            user.setShelter(Long.parseLong(tag));
             userService.update(user);
-            return startMenu.getStartMenu(user);
-        }
-        // Выбираем приют
-        if (stateSpecial.equals(SELECT_SHELTER_STARTED)) {
-            deleteOldMenu(user);
-            String tag = update.callbackQuery().data();
-            shelterMenu.updateShelter(user, tag);
-            return startMenu.getStartMenu(user);
+            messageSender.sendMessage(startMenu.getEditMessageStartMenu(user), user);
+            return null;
         }
 
         //Обработка телефона
         if (stateSpecial.equals(GET_PHONE_STARTED)) {
+            deleteOldMenu(user);
             user.setPhone(message);
             userService.update(user);
             bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
-            return startMenu.getStartMenu(user);
+            messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
+            return null;
         }
 
 
         //Обработка переписки в чате
         if (stateSpecial.equals(SUPPORT_CHAT_STARTED)) {
-            return supportService.sendToSupport(update, user);
+            bot.execute(supportService.sendToSupport(update, user));
+            return null;
         }
+//        if (stateSpecial.equals(REPORT_STARTED)) {
+//            //Обработка отчетов
+//            String localPathTelegramFile = fileService.getLocalPathTelegramFile(update);
+//            SendDocument sendDocument = fileService.sendDocument(user.getTelegramId(), localPathTelegramFile, "Спасибки, мы получили ваш отчет");
+//            bot.execute(sendDocument);
+//        }
+
         if (stateSpecial.equals(REPORT_STARTED)) {
             //Обработка отчетов
-            String localPathTelegramFile = fileService.getLocalPathTelegramFile(update);
-            SendDocument sendDocument = fileService.sendDocument(user.getTelegramId(), localPathTelegramFile, "Спасибки, мы получили ваш отчет");
-            bot.execute(sendDocument);
+            //---------------
+            Animal animal = reportService.getAnimal(user);
+            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+
+            log.error("?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + tag);
+            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
+            EditMessageText editInlineMessageText = new EditMessageText(user.getTelegramId(),
+                    user.getLastResponseStatemenuId().intValue(),
+                    animal.getName() + "(имя из базы) \n" +
+                            "выберите пункт меню, для отправки отчета\n" +
+                            "тэг=" + tag).replyMarkup(inlineMenuReport);
+            SendResponse execute = (SendResponse) bot.execute(editInlineMessageText);
+            if (execute != null) {
+                user.setLastResponseStatemenuId(execute.message().messageId().longValue());
+            }
+            userService.update(user);
+            return null;
         }
+
         return null;
     }
 
@@ -103,21 +127,29 @@ public class SpecialService {
     /**
      * Метод обрабатывает первичное нажатие из inline меню, и запускает процесс уже специальной обработки
      *
-     * @param user         user
+     * @param user   user
      * @param update update
-     * @param menu         InlineMenu
+     * @param menu   InlineMenu
      * @return SendMessage
      */
-    public SendMessage checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
-        SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+    public EditMessageText checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
+        EditMessageText editMessageText = new EditMessageText(user.getTelegramId(), user.getLastResponseStatemenuId().intValue(),
+                "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
         UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
+
+        String tag = "";
+        if (update.callbackQuery() != null) {
+            tag = update.callbackQuery().data();
+        }
 
         if (stateSpecial.equals(GET_PHONE)) {
             deleteOldMenu(user);
             UserState userState = getUserState(GET_PHONE_STARTED);
             user.setStateId(userState);
             userService.update(user);
-            return new SendMessage(user.getTelegramId(), menu.getAnswer());
+            SendMessage sendMessage = new SendMessage(user.getTelegramId(), menu.getAnswer());
+            messageSender.sendMessage(sendMessage, user);
+            return null;
         }
 
 
@@ -128,18 +160,44 @@ public class SpecialService {
             user.setStateId(userState);
             userService.update(user);
 
-            return new SendMessage(user.getTelegramId(), "Для завершения чата нажмите кнопку EXIT")
+            SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Для завершения чата нажмите кнопку EXIT")
                     .replyMarkup(new ReplyKeyboardMarkup(
                             new KeyboardButton("\uD83D\uDD1A EXIT"))
                             .resizeKeyboard(true)
                             .selective(true));
 
+            bot.execute(sendMessage);
+            return null;
+
         }
 
         if (stateSpecial.equals(REPORT)) {
             //Обработка отчетов
+            UserState userState = getUserState(REPORT_STARTED);
+            user.setStateId(userState);
+
+            //---------------
+            Animal animal = reportService.getAnimal(user);
+            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+
+            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
+
+            EditMessageText editInlineMessageText = new EditMessageText(user.getTelegramId(),
+                    user.getLastResponseStatemenuId().intValue(),
+                    animal.getName() + "(имя из базы) \n" +
+                            "выберите пункт меню, для отправки отчета\n" +
+                            "тэг=" + tag).replyMarkup(inlineMenuReport);
+            SendResponse execute = (SendResponse) bot.execute(editInlineMessageText);
+            if (execute != null) {
+                user.setLastResponseStatemenuId(execute.message().messageId().longValue());
+            }
+            userService.update(user);
+            return null;
+
         }
-        return sendMessage;
+
+
+        return editMessageText;
     }
 
     private UserState getUserState(UserStateSpecial stateSpecial) {
