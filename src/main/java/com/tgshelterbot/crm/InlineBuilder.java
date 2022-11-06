@@ -70,4 +70,11 @@ public class InlineBuilder {
         log.debug("InlineKeyboardMarkup: {}", keyboardMarkup);
         return keyboardMarkup;
     }
+
+    public InlineKeyboardMarkup getInlineMenuExit() {
+        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
+        keyboardMarkup.addRow(new InlineKeyboardButton("EXIT")
+                .callbackData("EXIT"));
+        return keyboardMarkup;
+    }
 }

@@ -199,8 +199,8 @@ ALTER TABLE public.animal_report_setup
 CREATE TABLE public.animal_report_setup_report_type (
                                                         id BIGSERIAL,
                                                         setup_id BIGINT NOT NULL,
-                                                        report_type_ip BIGINT NOT NULL,
-                                                        CONSTRAINT animal_report_setup_report_type_fk_report_type_id FOREIGN KEY (report_type_ip)
+                                                        report_type_id BIGINT NOT NULL,
+                                                        CONSTRAINT animal_report_setup_report_type_fk_report_type_id FOREIGN KEY (report_type_id)
                                                             REFERENCES public.animal_report_type(id)
                                                             ON DELETE CASCADE
                                                             ON UPDATE CASCADE

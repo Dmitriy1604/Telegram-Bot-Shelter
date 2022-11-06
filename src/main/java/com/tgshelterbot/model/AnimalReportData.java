@@ -1,6 +1,9 @@
 package com.tgshelterbot.model;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
@@ -12,7 +15,6 @@ import java.util.Objects;
 @Table(name = "animal_report_data")
 @Getter
 @Setter
-@ToString
 @RequiredArgsConstructor
 @org.hibernate.annotations.TypeDef(name = "report_state", typeClass = PostgreSQLEnumType.class)
 public class AnimalReportData {
@@ -21,19 +23,16 @@ public class AnimalReportData {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "telegram_user_id", nullable = false, referencedColumnName = "telegram_id")
-    @ToString.Exclude
-    private User telegramUser;
+    @Column(name = "telegram_user_id")
+    private Long telegramUser;
+
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "animal_report_id", nullable = false)
-    @ToString.Exclude
     private AnimalReport animalReport;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "report_type_id", nullable = false)
-    @ToString.Exclude
     private AnimalReportType reportType;
 
     @Column(name = "report_text")
@@ -41,6 +40,7 @@ public class AnimalReportData {
     private String reportText;
 
     @Column(name = "report_data_file")
+    @JsonIgnore
     private byte[] reportDataFile;
 
     @Column(name = "dt_create", nullable = false)
@@ -51,6 +51,7 @@ public class AnimalReportData {
 
     @Column(name = "tg_message_id")
     private Long tgMessageId;
+
     @Column(name = "local_file_name")
     @Type(type = "org.hibernate.type.TextType")
     private String localFileName;
@@ -71,5 +72,13 @@ public class AnimalReportData {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "AnimalReportData{" +
+                "id=" + id +
+                ", telegramUser=" + telegramUser +
+                '}';
     }
 }
