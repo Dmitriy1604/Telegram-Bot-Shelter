@@ -64,6 +64,8 @@ public class InlineBuilder {
                         .callbackData(telegramAnswer.getTagCallback()));
             }
         });
+        keyboardMarkup.addRow(new InlineKeyboardButton("EXIT")
+                .callbackData("EXIT"));
 
         log.debug("InlineKeyboardMarkup: {}", keyboardMarkup);
         return keyboardMarkup;
