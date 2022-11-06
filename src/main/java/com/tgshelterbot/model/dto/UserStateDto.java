@@ -1,8 +1,9 @@
-package com.tgshelterbot.dto;
+package com.tgshelterbot.model.dto;
 
 import com.tgshelterbot.model.UserStateSpecial;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @AllArgsConstructor
@@ -11,10 +12,12 @@ import javax.validation.constraints.NotNull;
 @Getter
 @ToString
 public class UserStateDto {
+    @EqualsAndHashCode.Include
     private Long id;
     @NotNull
+    @NotBlank
     private String name;
-    private UserStateSpecial stateSpecial;
+    private UserStateSpecial tagSpecial;
     @NotNull
     private Long shelterId;
 }

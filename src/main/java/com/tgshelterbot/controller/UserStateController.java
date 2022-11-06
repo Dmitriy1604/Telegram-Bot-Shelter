@@ -1,36 +1,82 @@
 package com.tgshelterbot.controller;
 
-import com.tgshelterbot.dto.UserStateDto;
-import com.tgshelterbot.service.impl.UserStateService;
+import com.tgshelterbot.model.dto.UserStateDto;
+import com.tgshelterbot.service.impl.UserStateServiceImpl;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/bot/userState")
 public class UserStateController {
-    private final UserStateService stateService;
+    private final UserStateServiceImpl stateService;
 
+    @ApiResponses({
+            @ApiResponse(responseCode = "201",
+                    description = "UserState was created",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserStateDto.class))),
+            @ApiResponse(responseCode = "404", description = "UserState not found"),
+            @ApiResponse(responseCode = "403", description = "UserState already exist"),
+            @ApiResponse(responseCode = "406", description = "UserState state field should be assigned by admins only!")
+    })
     @PostMapping
-    public ResponseEntity<UserStateDto> createOrUpdateUser (@RequestBody UserStateDto userState) {
-        return ResponseEntity.ok(stateService.saveOrUpdate(userState));
+    public ResponseEntity<UserStateDto> addUser(@RequestBody @Valid UserStateDto userState) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(stateService.save(userState));
     }
 
-    @DeleteMapping
-    public void deleteUserState (@RequestParam(value = "id") Long id) {
-        stateService.removeUserState(id);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<Collection<UserStateDto>> getAll () {
-        return ResponseEntity.ok(stateService.getAllUserStates());
-    }
-
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Collection of UserStates was returned",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Collection.class))),
+    })
     @GetMapping
-    public ResponseEntity<UserStateDto> getUserStateById (@RequestParam(value = "id") Long id) {
-        return ResponseEntity.ok(stateService.getUserState(id));
+    public Collection<UserStateDto> getAll() {
+        return stateService.getAllUserStates();
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "UserState was returned",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserStateDto.class))),
+            @ApiResponse(responseCode = "404", description = "User state doesn't exist"),
+    })
+    @GetMapping("/{id}")
+    public UserStateDto getUserStateById(@PathVariable Long id) {
+        return stateService.getUserState(id);
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "UserState was updated",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserStateDto.class))),
+            @ApiResponse(responseCode = "404", description = "UserState not found"),
+            @ApiResponse(responseCode = "406", description = "UserState state field should be assigned by admins only!")
+    })
+    @PutMapping
+    public UserStateDto updateUser(@RequestBody @Valid UserStateDto userState) {
+        return stateService.update(userState);
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "UserState was removed"),
+            @ApiResponse(responseCode = "404", description = "User state doesn't exist")
+    })
+    @DeleteMapping("/{id}")
+    public void deleteUserState(@PathVariable Long id) {
+        stateService.removeUserState(id);
     }
 }
