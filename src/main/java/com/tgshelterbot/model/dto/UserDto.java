@@ -28,7 +28,7 @@ public class UserDto implements Serializable {
             this.shelter = user.getShelter();
         }
         if (user.getStateId() != null) {
-            this.userStateDto = new UserStateDto(user.getStateId());
+            this.userStateDto = new UserStateDto(); //TODO FIX THIS
         }
     }
 }

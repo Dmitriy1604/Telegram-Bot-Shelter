@@ -14,10 +14,7 @@ import javax.validation.constraints.NotNull;
 public class UserStateDto {
     @EqualsAndHashCode.Include
     private Long id;
-<<<<<<<< HEAD:src/main/java/com/tgshelterbot/model/dto/UserStateDto.java
     @NotNull
-========
->>>>>>>> origin/feature-andrey:src/main/java/com/tgshelterbot/dto/UserStateDto.java
     @NotBlank
     private String name;
     private UserStateSpecial tagSpecial;
