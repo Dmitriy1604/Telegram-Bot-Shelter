@@ -1,9 +1,6 @@
 package com.tgshelterbot.mapper;
 
-import com.tgshelterbot.model.InlineMenu;
-import com.tgshelterbot.model.Shelter;
-import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserState;
+import com.tgshelterbot.model.*;
 import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.model.dto.InlineMenuDto;
 import com.tgshelterbot.model.dto.ShelterDto;
@@ -67,12 +64,10 @@ public class MapperDTO {
         inlineMenu.setPriority(inlineMenu.getPriority());
         return inlineMenu;
     }
-}
 
     public AnimalDto toDto(Animal entity) {
         return new AnimalDto(entity);
     }
-
 
     public User toEntity(UserDto dto) {
         User out = new User();
@@ -126,5 +121,4 @@ public class MapperDTO {
     public UserDto toDto(User user) {
         return new UserDto(user);
     }
-
 }
