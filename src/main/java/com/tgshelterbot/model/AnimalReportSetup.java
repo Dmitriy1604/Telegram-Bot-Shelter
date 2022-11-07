@@ -2,13 +2,10 @@ package com.tgshelterbot.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "animal_report_setup")
@@ -22,16 +19,9 @@ public class AnimalReportSetup {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "report_type_id", nullable = false)
-    @ToString.Exclude
-    private AnimalReportType reportType;
-
-    @OneToMany(mappedBy = "animalReportSetup")
-    @ToString.Exclude
-    private Set<AnimalType> animalTypes = new LinkedHashSet<>();
-
+    @Column(name = "name", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private String name;
 
     @Override
     public boolean equals(Object o) {

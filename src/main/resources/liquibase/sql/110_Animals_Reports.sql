@@ -33,17 +33,23 @@ CREATE TABLE public.animal_report_type (
 ----------------------------------------------------------
 CREATE TABLE public.animal_report_setup (
                                             id BIGSERIAL,
-                                            report_type_id BIGINT NOT NULL,
-                                            CONSTRAINT animal_report_setup_pkey PRIMARY KEY(id),
-                                            CONSTRAINT animal_report_setup_fk_report_type_id FOREIGN KEY (report_type_id)
-                                                REFERENCES public.animal_report_type(id)
-                                                ON DELETE CASCADE
-                                                ON UPDATE CASCADE
-                                                NOT DEFERRABLE
+                                            name TEXT,
+                                            CONSTRAINT animal_report_setup_pkey PRIMARY KEY(id)
 );
 
 COMMENT ON TABLE public.animal_report_setup
-    IS 'Животные типы и Репорты типы. Таблица one_to_many';
+    IS 'Животные настройка отчетов';
+
+INSERT INTO public.animal_report_setup ("id", "name")
+VALUES
+    (2, E'Шаблон отчетов для кошек'),
+    (1, E'Шаблон отчетов для собак (4 шт)');
+
+ALTER SEQUENCE public.animal_report_setup_id_seq
+    INCREMENT 1 MINVALUE 1
+        MAXVALUE 9223372036854775807 START 1
+        RESTART 3 CACHE 1
+        NO CYCLE;
 ----------------------------------------------------------
 CREATE TABLE public.animal_type (
                                     id BIGSERIAL,
@@ -186,3 +192,35 @@ COMMENT ON COLUMN public.animal_report_data.tg_message_id
 
 CREATE INDEX animal_report_data__tg_user_id ON public.animal_report_data
     USING btree (telegram_user_id);
+----------------------------------------------------------
+ALTER TABLE public.animal_report_setup
+    ALTER COLUMN name SET NOT NULL;
+----------------------------------------------------------
+CREATE TABLE public.animal_report_setup_report_type (
+                                                        id BIGSERIAL,
+                                                        setup_id BIGINT NOT NULL,
+                                                        report_type_id BIGINT NOT NULL,
+                                                        CONSTRAINT animal_report_setup_report_type_fk_report_type_id FOREIGN KEY (report_type_id)
+                                                            REFERENCES public.animal_report_type(id)
+                                                            ON DELETE CASCADE
+                                                            ON UPDATE CASCADE
+                                                            NOT DEFERRABLE,
+                                                        CONSTRAINT animal_report_setup_report_type_fk_setup_id FOREIGN KEY (setup_id)
+                                                            REFERENCES public.animal_report_setup(id)
+                                                            ON DELETE CASCADE
+                                                            ON UPDATE CASCADE
+                                                            NOT DEFERRABLE
+);
+INSERT INTO public.animal_report_type ("id", "name", "button", "tag_callback", "text_is_good_content", "text_is_bad_content", "is_text", "is_file", "priority", "language_id", "shelter_id")
+VALUES
+    (1, E'Фото', E'Отправить фото', E'b3526d4b-22e7-4241-a9f5-e4971c493233', E'Спасибо, отчет получен', E'Отправьте файл фотографию', False, True, 1, 1, 1),
+    (2, E'Рацион', E'Описать район', E'f8226f8d-3ce4-40a8-a20c-0004fdfb411f', E'Спасибо, отчет получен', E'Отправьте рацион животного текстовым сообщением', True, False, 2, 1, 1),
+    (3, E'Общ состояние', E'Описать общее состояние', E'954a8f55-5410-4ff4-994e-709fe81c35da', E'Спасибо, отчет получен', E'Мы ждем от вас текст', True, False, 3, 1, 1),
+    (4, E'Изменения', E'Описать изменения поведения', E'28ec5771-551c-45a5-9b8b-ed79d88e2f9b', E'Спасибо, отчет получен', E'Мы ждем от вас текст', True, False, 4, 1, 1);
+
+ALTER SEQUENCE public.animal_report_type_id_seq
+    INCREMENT 1 MINVALUE 1
+        MAXVALUE 9223372036854775807 START 1
+        RESTART 5 CACHE 1
+        NO CYCLE;
+----------------------------------------------------------

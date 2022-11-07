@@ -2,43 +2,33 @@ package com.tgshelterbot.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
-@Table(name = "animal_type")
+@Table(name = "animal_report_setup_report_type")
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class AnimalType {
+public class AnimalReportSetupReportType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    @Type(type = "org.hibernate.type.TextType")
-    private String name;
+    @Column(name = "setup_id", nullable = false)
+    private Long setup;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_report_setup_id")
-    @ToString.Exclude
-    private AnimalReportSetup animalReportSetup;
-
-    @Column(name = "days_for_test")
-    private Integer daysForTest;
-
+    @Column(name = "report_type_id", nullable = false)
+    private Long reportTypeId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        AnimalType that = (AnimalType) o;
+        AnimalReportSetupReportType that = (AnimalReportSetupReportType) o;
         return id != null && Objects.equals(id, that.id);
     }
 

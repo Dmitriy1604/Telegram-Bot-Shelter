@@ -1,6 +1,7 @@
 package com.tgshelterbot.crm.specialmenu;
 
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.tgshelterbot.crm.InlineBuilder;
 import com.tgshelterbot.model.InlineMenu;
@@ -32,16 +33,7 @@ public class StartMenu {
         this.userService = userService;
     }
 
-    public SendMessage getStartMenu(@NotNull User user) {
-        // Проверим на выбор языка, выдадим список языков
-        if (user.getLanguage() == null) {
-            return languageMenu.getLanguageMenu(user);
-        }
-
-        // Проверим на выбор приюта, выдадим список приютов
-        if (user.getShelter() == null) {
-            return shelterMenu.getShelterMenu(user);
-        }
+    public EditMessageText getEditMessageStartMenu(@NotNull User user) {
 
         String defaultMsg = "";
         InlineMenu inlineMenu = new InlineMenu();
@@ -55,7 +47,24 @@ public class StartMenu {
         }
 
         InlineKeyboardMarkup keyboardMarkup = inlineBuilder.getInlineMenu(inlineMenu);
-        System.out.println("inlineMenu = " + keyboardMarkup);
+        return new EditMessageText(user.getTelegramId(), user.getLastResponseStatemenuId().intValue(), defaultMsg).replyMarkup(keyboardMarkup);
+    }
+
+    public SendMessage getSendMessageStartMenu(@NotNull User user) {
+
+        String defaultMsg = "";
+        InlineMenu inlineMenu = new InlineMenu();
+        Optional<InlineMenu> menuOptional = inlineMenuRepository.findFirstByLanguageIdAndShelterIdAndQuestion(user.getLanguage(), user.getShelter(),
+                "/start");
+        if (menuOptional.isPresent()) {
+            inlineMenu = menuOptional.get();
+            defaultMsg = menuOptional.get().getAnswer();
+            user.setStateId(inlineMenu.getStateIdNext());
+            userService.update(user);
+        }
+
+        InlineKeyboardMarkup keyboardMarkup = inlineBuilder.getInlineMenu(inlineMenu);
         return new SendMessage(user.getTelegramId(), defaultMsg).replyMarkup(keyboardMarkup);
     }
+
 }

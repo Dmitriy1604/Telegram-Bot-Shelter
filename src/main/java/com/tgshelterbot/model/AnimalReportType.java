@@ -52,25 +52,12 @@ public class AnimalReportType {
     @Column(name = "priority", nullable = false)
     private Integer priority;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "language_id", nullable = false)
-    @ToString.Exclude
-    private Language language;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "shelter_id", nullable = false)
-    @ToString.Exclude
-    private Shelter shelter;
+    @Column(name = "language_id", nullable = false)
+    private Long language;
 
-    @OneToMany(mappedBy = "reportType")
-    @ToString.Exclude
-    private Set<AnimalReportData> animalReportData = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "reportType")
-    @ToString.Exclude
-    private Set<AnimalReportSetup> animalReportSetups = new LinkedHashSet<>();
+    @Column(name = "shelter_id", nullable = false)
+    private Long shelter;
 
 
     @Override
