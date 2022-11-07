@@ -39,10 +39,9 @@ class UserStateControllerTest {
     private UserStateServiceImpl stateService;
     @SpyBean
     MapperDTO dtoMapper;
-    @Spy
     private UserState userState;
     @InjectMocks
-    UserStateController controller;
+    private UserStateController controller;
     private final String URL = "/bot/userState";
     private final Long ID = 1L;
     private final String SLASH = "/";
@@ -62,6 +61,8 @@ class UserStateControllerTest {
     void create_ShouldReturnUserStatePOJO_AndRightResponseStatuses() throws Exception {
         when(stateRepository.save(any(UserState.class))).thenReturn(userState);
         when(stateRepository.findById(anyLong())).thenReturn(Optional.empty());
+        userState.setId(null);
+        json = objectMapper.writeValueAsString(userState);
         mockMvc.perform(post(URL).content(json)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -69,6 +70,8 @@ class UserStateControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(json));
         when(stateRepository.findById(anyLong())).thenReturn(Optional.ofNullable(userState));
+        userState.setId(1L);
+        json = objectMapper.writeValueAsString(userState);
         mockMvc.perform(post(URL).content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().is4xxClientError());
@@ -150,7 +153,8 @@ class UserStateControllerTest {
         doNothing().when(stateRepository).deleteById(anyLong());
         mockMvc.perform(delete(URL + SLASH + ID).accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(json));
         when(stateRepository.findById(anyLong())).thenReturn(Optional.empty());
         mockMvc.perform(delete(URL + SLASH + ID).accept(MediaType.APPLICATION_JSON))
                 .andDo(print())

@@ -13,5 +13,5 @@ public interface UserStateService {
 
     UserStateDto update(UserStateDto userStateDto);
 
-    void removeUserState(Long id);
+    UserStateDto removeUserState(Long id);
 }

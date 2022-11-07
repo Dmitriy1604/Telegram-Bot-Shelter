@@ -1,10 +1,8 @@
 package com.tgshelterbot.mapper;
 
-import com.tgshelterbot.model.Animal;
-import com.tgshelterbot.model.Shelter;
-import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.UserState;
+import com.tgshelterbot.model.*;
 import com.tgshelterbot.model.dto.AnimalDto;
+import com.tgshelterbot.model.dto.InlineMenuDto;
 import com.tgshelterbot.model.dto.ShelterDto;
 import com.tgshelterbot.model.dto.UserDto;
 import com.tgshelterbot.model.dto.UserStateDto;
@@ -39,10 +37,37 @@ public class MapperDTO {
         return state;
     }
 
+    public InlineMenuDto toDto(InlineMenu inlineMenu) {
+        return new InlineMenuDto(inlineMenu.getId(),
+                inlineMenu.getLanguageId(),
+                inlineMenu.getShelterId(),
+                inlineMenu.getTagCallback(),
+                inlineMenu.getQuestion(),
+                inlineMenu.getAnswer(),
+                inlineMenu.getButton(),
+                inlineMenu.getStateId(),
+                inlineMenu.getStateIdNext(),
+                inlineMenu.getPriority());
+    }
+
+    public InlineMenu toEntity(InlineMenuDto dto) {
+        InlineMenu inlineMenu = new InlineMenu();
+        inlineMenu.setId(dto.getId());
+        inlineMenu.setLanguageId(dto.getLanguageId());
+        inlineMenu.setShelterId(dto.getShelterId());
+        inlineMenu.setTagCallback(dto.getTagCallback());
+        inlineMenu.setQuestion(dto.getQuestion());
+        inlineMenu.setAnswer(dto.getAnswer());
+        inlineMenu.setButton(dto.getButton());
+        inlineMenu.setStateId(dto.getStateId());
+        inlineMenu.setStateIdNext(dto.getStateIdNext());
+        inlineMenu.setPriority(inlineMenu.getPriority());
+        return inlineMenu;
+    }
+
     public AnimalDto toDto(Animal entity) {
         return new AnimalDto(entity);
     }
-
 
     public User toEntity(UserDto dto) {
         User out = new User();
@@ -96,5 +121,4 @@ public class MapperDTO {
     public UserDto toDto(User user) {
         return new UserDto(user);
     }
-
 }

@@ -1,6 +1,7 @@
 package com.tgshelterbot.service.impl;
 
 import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.dto.UserStateDto;
 import com.tgshelterbot.repository.UserStateRepository;
 import com.tgshelterbot.service.UserStateService;
@@ -42,17 +43,15 @@ public class UserStateServiceImpl implements UserStateService {
         log.debug(LOG_SAMPLE, "getUserState", id);
         return stateRepository.findById(id)
                 .map(dtoMapper::toDto)
-                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND)); //404 will have been thrown
     }
 
     @Override
     public UserStateDto save(UserStateDto userStateDto) {
         if (Objects.nonNull(userStateDto.getTagSpecial())) {
-            throw new IllegalArgumentException(NOT_ACCEPTABLE);
-        } else if (stateRepository.findById(userStateDto.getId()).isPresent() ||
-                userStateDto.getId() < 0 ||
-                userStateDto.getShelterId() < 1) {
-            throw new EntityExistsException(FORBIDDEN);
+            throw new IllegalArgumentException(NOT_ACCEPTABLE); // 406 will have been thrown
+        } else if (stateRepository.findById(userStateDto.getId()).isPresent() || userStateDto.getShelterId() < 1) {
+            throw new EntityExistsException(FORBIDDEN); //403 will have been thrown
         }
         log.debug(LOG_SAMPLE, "save", userStateDto);
         return dtoMapper.toDto(stateRepository.save(dtoMapper.toEntity(userStateDto)));
@@ -61,20 +60,23 @@ public class UserStateServiceImpl implements UserStateService {
     @Override
     public UserStateDto update(UserStateDto userStateDto) {
         if (Objects.nonNull(userStateDto.getTagSpecial())) {
-            throw new IllegalArgumentException(NOT_ACCEPTABLE);
+            throw new IllegalArgumentException(NOT_ACCEPTABLE);//406 will have been thrown
         } else if (stateRepository.findById(userStateDto.getId()).isEmpty() ||
                 userStateDto.getId() < 0 ||
                 userStateDto.getShelterId() < 1) {
-            throw new EntityExistsException(FORBIDDEN);
+            throw new EntityExistsException(FORBIDDEN);//403 will have been thrown
         }
-        log.debug(LOG_SAMPLE, "update", userStateDto.toString());
+        log.debug(LOG_SAMPLE, "update", userStateDto);
         return dtoMapper.toDto(stateRepository.save(dtoMapper.toEntity(userStateDto)));
     }
 
     @Override
-    public void removeUserState(Long id) {
+    public UserStateDto removeUserState(Long id) {
         log.debug(LOG_SAMPLE, "removeUserState", Void.TYPE);
-        stateRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(FORBIDDEN));
+        //404 will have been thrown
+        UserState state = stateRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(NOT_FOUND));
+        UserStateDto stateDto = dtoMapper.toDto(state);
         stateRepository.deleteById(id);
+        return stateDto;
     }
 }
