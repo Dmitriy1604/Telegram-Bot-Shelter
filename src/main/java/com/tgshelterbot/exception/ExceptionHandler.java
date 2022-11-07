@@ -19,7 +19,7 @@ public class ExceptionHandler {
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @org.springframework.web.bind.annotation.ExceptionHandler(EntityExistsException.class)
-    public void handleEntityExistAndIllegalArg(EntityExistsException e) {
+    public void handleEntityExist(EntityExistsException e) {
         log.error("EntityExistsException occurred cause: {}, message: {}", e.getCause(), e.getMessage());
     }
 

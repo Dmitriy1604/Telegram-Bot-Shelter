@@ -116,10 +116,7 @@ COMMENT ON COLUMN public.users.info
 COMMENT ON COLUMN public.users.dt_create
     IS 'Дата создания';
 
--- ALTER TABLE public.users
---     OWNER TO postgres;
-ALTER TABLE public.users
-    OWNER TO postgres;
+
 
 --changeset samael:50
 CREATE TABLE public.inline_menu (
@@ -158,10 +155,7 @@ COMMENT ON COLUMN public.inline_menu.state_id_next
 CREATE INDEX inline_menu_language_shelter_state ON public.inline_menu
     USING btree (language_id, shelter_id, state_id);
 
--- ALTER TABLE public.inline_menu
---     OWNER TO postgres;
-ALTER TABLE public.inline_menu
-    OWNER TO postgres;
+
 
 --changeset samael:60
 ALTER TABLE public.inline_menu
@@ -190,10 +184,7 @@ COMMENT ON TABLE public.message_for_delete
 COMMENT ON COLUMN public.message_for_delete.id
     IS 'id';
 
--- ALTER TABLE public.message_for_delete
---     OWNER TO postgres;
-ALTER TABLE public.message_for_delete
-    OWNER TO postgres;
+
 
 --changeset samael:75
 ALTER TABLE public.inline_menu

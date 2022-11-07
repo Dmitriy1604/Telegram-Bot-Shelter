@@ -67,7 +67,7 @@ public class UserStateController {
             @ApiResponse(responseCode = "406", description = "UserState state field should be assigned by admins only!")
     })
     @PutMapping
-    public UserStateDto updateUser(@RequestBody @Valid UserStateDto userState) {
+    public UserStateDto updateUserState(@RequestBody @Valid UserStateDto userState) {
         return stateService.update(userState);
     }
 
@@ -76,7 +76,7 @@ public class UserStateController {
             @ApiResponse(responseCode = "404", description = "User state doesn't exist")
     })
     @DeleteMapping("/{id}")
-    public void deleteUserState(@PathVariable Long id) {
-        stateService.removeUserState(id);
+    public UserStateDto deleteUserState(@PathVariable Long id) {
+        return stateService.removeUserState(id);
     }
 }
