@@ -3,7 +3,6 @@ package com.tgshelterbot.controller;
 import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.model.dto.ShelterDto;
 import com.tgshelterbot.service.AnimalService;
-import com.tgshelterbot.service.ShelterService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -54,8 +52,9 @@ public class AnimalController {
             )
     })
     @PostMapping
-    public ResponseEntity<AnimalDto> create(@Valid @RequestBody AnimalDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
+    @ResponseStatus(HttpStatus.CREATED)
+    public AnimalDto create(@Valid @RequestBody AnimalDto dto) {
+        return service.create(dto);
     }
 
     @ApiResponses({
