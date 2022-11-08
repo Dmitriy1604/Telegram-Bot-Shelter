@@ -1,38 +1,38 @@
 package com.tgshelterbot.service.impl;
 
 import com.tgshelterbot.exception.ShelterIsNotExistsException;
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.ShelterMapper;
 import com.tgshelterbot.model.Shelter;
 import com.tgshelterbot.model.dto.ShelterDto;
 import com.tgshelterbot.repository.ShelterRepository;
 import com.tgshelterbot.service.ShelterService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ShelterServiceImpl implements ShelterService {
 
     private final ShelterRepository repository;
-    private final MapperDTO mapperDTO;
+    private final ShelterMapper shelterMapper;
 
     @Override
     public List<ShelterDto> getAll() {
-        return repository.findAll().stream().map(mapperDTO::toDto).collect(Collectors.toList());
+        return repository.findAll().stream().map(shelterMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
     public ShelterDto create(ShelterDto dto) {
-        Shelter shelter = mapperDTO.toEntity(dto);
-        return mapperDTO.toDto(repository.save(shelter));
+        Shelter shelter = shelterMapper.toEntity(dto);
+        return shelterMapper.toDto(repository.save(shelter));
     }
 
     @Override
     public ShelterDto read(Long id) {
-        return mapperDTO.toDto(repository.findById(id).orElseThrow(ShelterIsNotExistsException::new));
+        return shelterMapper.toDto(repository.findById(id).orElseThrow(ShelterIsNotExistsException::new));
     }
 
     @Override
@@ -41,14 +41,14 @@ public class ShelterServiceImpl implements ShelterService {
         shelter.setId(id);
         shelter.setName(dto.getName());
 
-        return mapperDTO.toDto(repository.save(shelter));
+        return shelterMapper.toDto(repository.save(shelter));
     }
 
     @Override
     public ShelterDto delete(Long id) {
         Shelter shelter = repository.findById(id).orElseThrow(ShelterIsNotExistsException::new);
         repository.delete(shelter);
-        return mapperDTO.toDto(shelter);
+        return shelterMapper.toDto(shelter);
     }
 
 }
