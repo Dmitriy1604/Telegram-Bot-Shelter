@@ -97,7 +97,7 @@
                         <exclude>**/exception/*</exclude>
                         <exclude>**/listener/*</exclude>
                         <exclude>**/aop/*</exclude>
-                        <exclude>**/model/*</exclude>
+                        <exclude>**/model/**</exclude>
                         <exclude>**/schedule/*</exclude>
                         <exclude>**/configuration/*</exclude>
                         <exclude>**/tgshelterbot/*.class</exclude>
@@ -128,7 +128,7 @@
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
-                                            <value>COVEREDRATIO</value>
+                                            <value>COVERED-RATIO</value>
                                             <minimum>${jacocoCoverage}</minimum>
                                         </limit>
                                     </limits>
