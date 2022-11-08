@@ -1,7 +1,7 @@
 package com.tgshelterbot.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.ShelterMapperImpl;
 import com.tgshelterbot.model.Shelter;
 import com.tgshelterbot.model.dto.ShelterDto;
 import com.tgshelterbot.repository.ShelterRepository;
@@ -31,7 +31,6 @@ class ShelterControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -40,9 +39,8 @@ class ShelterControllerTest {
 
     @SpyBean
     private ShelterServiceImpl shelterService;
-
     @SpyBean
-    private MapperDTO mapperDTO;
+    private ShelterMapperImpl shelterMapper;
 
     @InjectMocks
     private ShelterController shelterController;
@@ -100,21 +98,6 @@ class ShelterControllerTest {
                 .andExpect(content().json(json));
     }
 
-    @Test
-    void update() throws Exception {
-        ShelterDto shelterDto = getShelterDto();
-        String json = objectMapper.writeValueAsString(shelterDto);
-        Mockito.when(shelterRepository.findById(any(Long.class))).thenReturn(Optional.of(getShelter()));
-        Mockito.when(shelterRepository.save(any(Shelter.class))).thenReturn(getShelter());
-
-        mockMvc.perform(MockMvcRequestBuilders.put(URL + ID)
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(json));
-    }
 
     @Test
     void delete() throws Exception {

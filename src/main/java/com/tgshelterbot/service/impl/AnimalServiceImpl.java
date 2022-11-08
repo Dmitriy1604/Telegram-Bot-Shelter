@@ -7,6 +7,7 @@ import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.repository.AnimalRepository;
 import com.tgshelterbot.repository.AnimalTypeRepository;
 import com.tgshelterbot.repository.ShelterRepository;
+import com.tgshelterbot.repository.UserRepository;
 import com.tgshelterbot.service.AnimalService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class AnimalServiceImpl implements AnimalService {
     private final AnimalRepository repository;
     private final AnimalTypeRepository animalTypeRepository;
+    private final UserRepository userRepository;
     private final ShelterRepository shelterRepository;
     private final AnimalMapper animalMapper;
 
@@ -51,8 +53,9 @@ public class AnimalServiceImpl implements AnimalService {
     @Override
     public AnimalDto update(Long id, AnimalDto dto) {
         Animal original = repository.findById(id).orElseThrow(EntityNotFoundException::new);
-        AnimalType animalType = animalTypeRepository.findById(dto.getId()).orElseThrow(EntityNotFoundException::new);
         shelterRepository.findById(dto.getShelterId()).orElseThrow(EntityNotFoundException::new);
+        userRepository.findByTelegramId(dto.getUserId()).orElseThrow(EntityNotFoundException::new);
+        AnimalType animalType = animalTypeRepository.findById(dto.getId()).orElseThrow(EntityNotFoundException::new);
 
         Animal update = animalMapper.toEntity(dto);
         update.setId(id);
