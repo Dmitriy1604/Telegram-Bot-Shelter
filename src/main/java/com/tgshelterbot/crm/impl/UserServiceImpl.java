@@ -1,12 +1,11 @@
-package com.tgshelterbot.service.impl;
+package com.tgshelterbot.crm.impl;
 
 import com.pengrad.telegrambot.model.Update;
-import com.tgshelterbot.model.Animal;
+import com.tgshelterbot.crm.UserService;
 import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.UserRepository;
 import com.tgshelterbot.repository.UserStateRepository;
-import com.tgshelterbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,7 @@ public class UserServiceImpl implements UserService {
     public Long getIdUser(Update update) {
         Long idUser = 0L;
         if (update.message() != null && update.message().chat() != null && update.message().chat().id() != null) {
-            idUser =  update.message().chat().id();
+            idUser = update.message().chat().id();
         } else if (update.callbackQuery() != null) {
             idUser = update.callbackQuery().from().id();
         }

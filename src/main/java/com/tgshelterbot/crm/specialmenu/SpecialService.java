@@ -8,15 +8,11 @@ import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.tgshelterbot.crm.InlineBuilder;
-import com.tgshelterbot.crm.MessageSender;
-import com.tgshelterbot.crm.SupportService;
+import com.tgshelterbot.crm.*;
 import com.tgshelterbot.model.*;
 import com.tgshelterbot.repository.AnimalReportRepository;
 import com.tgshelterbot.repository.AnimalReportTypeRepository;
 import com.tgshelterbot.repository.UserStateRepository;
-import com.tgshelterbot.service.UserService;
-import com.tgshelterbot.service.impl.ReportServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,18 +38,17 @@ public class SpecialService {
     private final InlineBuilder inlineBuilder;
     private final AnimalReportTypeRepository animalReportTypeRepository;
     private final AnimalReportRepository animalReportRepository;
-    private final ReportServiceImpl reportService;
+    private final ReportService reportService;
 
     /**
      * Метод обрабатывает сообщения, если у пользователя запущен специальный статус
      *
      * @param user   user
      * @param update telegram update
-     * @return SendMessage, или null когда специального статуса нет и мы идем по базовой логике
      */
-    public EditMessageText checkSpecialStatus(@NotNull User user, Update update) {
+    public void checkSpecialStatus(@NotNull User user, Update update) {
         if (user.getStateId() == null) {
-            return null;
+            return;
         }
         String tag = null;
         if (update.callbackQuery() != null) {
@@ -62,7 +57,7 @@ public class SpecialService {
 
         UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
 
-        String message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
+        String message = "";
         if (update.message() != null) {
             message = update.message().text();
         }
@@ -71,7 +66,7 @@ public class SpecialService {
             user.setShelter(Long.parseLong(tag));
             userService.update(user);
             messageSender.sendMessage(startMenu.getEditMessageStartMenu(user), user);
-            return null;
+            return;
         }
 
         //Обработка телефона
@@ -81,27 +76,30 @@ public class SpecialService {
             userService.update(user);
             bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
             messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
-            return null;
+            return;
         }
 
 
         //Обработка переписки в чате
         if (stateSpecial.equals(SUPPORT_CHAT_STARTED)) {
             bot.execute(supportService.sendToSupport(update, user));
-            return null;
+            return;
         }
 
         if (stateSpecial.equals(REPORT_STARTED) && tag != null) {
             //Обработка отчетов, была нажата кнопка с типом отчета
             reportService.processWithTag(user, tag);
-            return null;
+            return;
         }
 
         if (stateSpecial.equals(REPORT_STARTED) && tag == null) {
             //Обработка отчетов, пустой тэг, в юзере берем тип отчета который ждем
             reportService.processNullTag(user, update);
+            return;
         }
-        return null;
+        message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
+        SendMessage sendMessage = new SendMessage(user.getTelegramId(), message);
+        messageSender.sendMessage(sendMessage, user);
     }
 
 
@@ -111,11 +109,8 @@ public class SpecialService {
      * @param user   user
      * @param update update
      * @param menu   InlineMenu
-     * @return SendMessage
      */
-    public EditMessageText checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
-        EditMessageText editMessageText = new EditMessageText(user.getTelegramId(), user.getLastResponseStatemenuId().intValue(),
-                "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+    public void checkSpecialStatusInMenu(@NotNull User user, Update update, InlineMenu menu) {
         UserStateSpecial stateSpecial = user.getStateId().getTagSpecial();
 
         String tag = "";
@@ -130,7 +125,7 @@ public class SpecialService {
             userService.update(user);
             SendMessage sendMessage = new SendMessage(user.getTelegramId(), menu.getAnswer());
             messageSender.sendMessage(sendMessage, user);
-            return null;
+            return;
         }
 
 
@@ -148,7 +143,7 @@ public class SpecialService {
                             .selective(true));
 
             bot.execute(sendMessage);
-            return null;
+            return;
 
         }
 
@@ -183,7 +178,7 @@ public class SpecialService {
                 bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, вы заполнили все отчеты."));
                 SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                 messageSender.sendMessage(sendMessageStartMenu, user);
-                return null;
+                return;
             }
             //Генерируем меню
             InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportTypeSet);
@@ -193,12 +188,13 @@ public class SpecialService {
                     "Отчет по питомцу: " + animal.getName() + "\n" +
                             "выберите пункт меню, для отправки отчета").replyMarkup(inlineMenuReport);
             messageSender.sendMessage(editInlineMessageText, user);
-            return null;
+            return;
 
         }
 
-
-        return editMessageText;
+        EditMessageText editMessageText = new EditMessageText(user.getTelegramId(), user.getLastResponseStatemenuId().intValue(),
+                "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+        messageSender.sendMessage(editMessageText, user);
     }
 
     private UserState getUserState(UserStateSpecial stateSpecial) {

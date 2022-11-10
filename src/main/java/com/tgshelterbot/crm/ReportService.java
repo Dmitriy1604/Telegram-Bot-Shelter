@@ -1,18 +1,13 @@
-package com.tgshelterbot.service.impl;
+package com.tgshelterbot.crm;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.tgshelterbot.crm.InlineBuilder;
-import com.tgshelterbot.crm.MessageSender;
-import com.tgshelterbot.crm.SupportService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.*;
 import com.tgshelterbot.repository.*;
-import com.tgshelterbot.service.FileService;
-import com.tgshelterbot.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +21,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReportServiceImpl {
+public class ReportService {
 
     private final AnimalReportRepository animalReportRepository;
     private final AnimalReportDataRepository animalReportDataRepository;
