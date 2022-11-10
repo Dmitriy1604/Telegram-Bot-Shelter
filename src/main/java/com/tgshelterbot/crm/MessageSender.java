@@ -1,6 +1,7 @@
 package com.tgshelterbot.crm;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendDocument;
 import com.pengrad.telegrambot.request.SendMessage;
@@ -45,6 +46,14 @@ public class MessageSender {
         User update = userService.update(user);
         log.debug("User after send and save: {}", user);
         return update;
+    }
+
+
+    public void deleteOldMenu(User user) {
+        if (user.getLastResponseStatemenuId() != null) {
+            DeleteMessage deleteMessage = new DeleteMessage(user.getTelegramId(), user.getLastResponseStatemenuId().intValue());
+            bot.execute(deleteMessage);
+        }
     }
 
 }

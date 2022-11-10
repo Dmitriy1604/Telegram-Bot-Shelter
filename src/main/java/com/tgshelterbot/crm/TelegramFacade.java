@@ -8,7 +8,6 @@ import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.tgshelterbot.crm.specialmenu.ShelterMenu;
-import com.tgshelterbot.crm.specialmenu.SpecialService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;

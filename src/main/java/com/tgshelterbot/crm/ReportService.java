@@ -3,7 +3,6 @@ package com.tgshelterbot.crm;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
-import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.*;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,9 +38,10 @@ public class ReportService {
 
     public Animal getAnimal(User user) {
         List<Animal> animalsByUserId = animalRepository.findAnimalsByUserId(user.getTelegramId());
-        return animalsByUserId.stream()
+        Optional<Animal> animalOptional = animalsByUserId.stream()
                 .filter(animal -> animal.getState().equals(Animal.AnimalStateEnum.IN_TEST))
-                .findFirst().orElseThrow(EntityNotFoundException::new);
+                .findFirst();
+        return animalOptional.orElse(null);
     }
 
     public LinkedHashSet<AnimalReportType> getAnimalReportType() {
@@ -59,7 +58,7 @@ public class ReportService {
         //Сейвим в пользователя текущий репорт, кнопка которого была нажата
         user.setReportId(reportType.getId());
 
-        deleteOldMenu(user);
+        messageSender.deleteOldMenu(user);
         InlineKeyboardMarkup menuExit = inlineBuilder.getInlineMenuExit();
         SendMessage sendMessage = new SendMessage(user.getTelegramId(), reportType.getName()).replyMarkup(menuExit);
         messageSender.sendMessage(sendMessage, user);
@@ -69,6 +68,10 @@ public class ReportService {
     public void processNullTag(User user, Update update) {
         boolean isOkType = false;
         Animal animal = getAnimal(user);
+        if (animal == null) {
+            messageSender.sendMessage(new SendMessage(user.getTelegramId(), "Я Вас не понял, нажмите /start для возврата в главное меню"), user);
+            return;
+        }
         Optional<AnimalReportType> optionalAnimalReportType = animalReportTypeRepository.findById(user.getReportId());
         if (optionalAnimalReportType.isEmpty()) {
             log.error("optionalAnimalReportType.isEmpty()");
@@ -135,7 +138,7 @@ public class ReportService {
             log.debug("AnimalTypeId={}\n AnimalReport.getId={}", animal.getAnimalTypeId(), animalReport.getId());
             //Проверка может все отчеты уже заполнили
             if (reportSetByAnimalType.size() == 0) {
-                deleteOldMenu(user);
+                messageSender.deleteOldMenu(user);
                 bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, вы заполнили все отчеты."));
                 SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                 messageSender.sendMessage(sendMessageStartMenu, user);
@@ -144,7 +147,7 @@ public class ReportService {
 
             //Отфильтруем которые в статусе создан
             InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
-            deleteOldMenu(user);
+            messageSender.deleteOldMenu(user);
             user.setReportId(null); //при успешной отправке отчета
             SendMessage sendMessage = new SendMessage(user.getTelegramId(),
                     animalReportType.getTextIsGoodContent()).replyMarkup(inlineMenuReport);
@@ -152,7 +155,7 @@ public class ReportService {
         }
 
         if (!isOkType) {
-            deleteOldMenu(user);
+            messageSender.deleteOldMenu(user);
             InlineKeyboardMarkup inlineMenuExit = inlineBuilder.getInlineMenuExit();
             SendMessage sendMessage = new SendMessage(user.getTelegramId(), animalReportType.getTextIsBadContent()).replyMarkup(inlineMenuExit);
             messageSender.sendMessage(sendMessage, user);
@@ -184,14 +187,4 @@ public class ReportService {
         userService.update(user);
         return animalReportId;
     }
-
-
-    private void deleteOldMenu(User user) {
-        if (user.getLastResponseStatemenuId() != null) {
-            DeleteMessage deleteMessage = new DeleteMessage(user.getTelegramId(), user.getLastResponseStatemenuId().intValue());
-            bot.execute(deleteMessage);
-        }
-    }
-
-
 }

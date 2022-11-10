@@ -1,14 +1,13 @@
-package com.tgshelterbot.crm.specialmenu;
+package com.tgshelterbot.crm;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
-import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.tgshelterbot.crm.*;
+import com.tgshelterbot.crm.specialmenu.StartMenu;
 import com.tgshelterbot.model.*;
 import com.tgshelterbot.repository.AnimalReportRepository;
 import com.tgshelterbot.repository.AnimalReportTypeRepository;
@@ -71,7 +70,7 @@ public class SpecialService {
 
         //Обработка телефона
         if (stateSpecial.equals(GET_PHONE_STARTED)) {
-            deleteOldMenu(user);
+            messageSender.deleteOldMenu(user);
             user.setPhone(message);
             userService.update(user);
             bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
@@ -119,7 +118,7 @@ public class SpecialService {
         }
 
         if (stateSpecial.equals(GET_PHONE)) {
-            deleteOldMenu(user);
+            messageSender.deleteOldMenu(user);
             UserState userState = getUserState(GET_PHONE_STARTED);
             user.setStateId(userState);
             userService.update(user);
@@ -131,7 +130,7 @@ public class SpecialService {
 
         //Обработка начала чата
         if (stateSpecial.equals(SUPPORT_CHAT)) {
-            deleteOldMenu(user);
+            messageSender.deleteOldMenu(user);
             UserState userState = getUserState(SUPPORT_CHAT_STARTED);
             user.setStateId(userState);
             userService.update(user);
@@ -147,13 +146,17 @@ public class SpecialService {
 
         }
 
+        //Обработка отчетов
         if (stateSpecial.equals(REPORT)) {
-            //Обработка отчетов
+            Animal animal = reportService.getAnimal(user);
+            if (animal == null) {
+                messageSender.deleteOldMenu(user);
+                messageSender.sendMessage(new SendMessage(user.getTelegramId(), "❗️У Вас нет закрепленных животных"), user);
+                messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
+                return;
+            }
             UserState userState = getUserState(REPORT_STARTED);
             user.setStateId(userState);
-
-            //---------------
-            Animal animal = reportService.getAnimal(user);
 
             //Если нет за сегодня, тогда генерируем
             Optional<AnimalReport> animalReportOptional = animalReportRepository.findFirstByStateAndAnimalOrderById(AnimalReportStateEnum.CREATED, animal.getId());
@@ -174,8 +177,8 @@ public class SpecialService {
 
             //Когда заполнили все отчеты
             if (reportTypeSet.size() == 0) {
-                deleteOldMenu(user);
-                bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, вы заполнили все отчеты."));
+                messageSender.deleteOldMenu(user);
+                bot.execute(new SendMessage(user.getTelegramId(), "\uD83C\uDF89 Спасибо, вы заполнили все отчеты."));
                 SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                 messageSender.sendMessage(sendMessageStartMenu, user);
                 return;
@@ -201,11 +204,5 @@ public class SpecialService {
         return userStateRepository.findFirstByTagSpecial(stateSpecial).orElse(null);
     }
 
-    private void deleteOldMenu(User user) {
-        if (user.getLastResponseStatemenuId() != null) {
-            DeleteMessage deleteMessage = new DeleteMessage(user.getTelegramId(), user.getLastResponseStatemenuId().intValue());
-            bot.execute(deleteMessage);
-        }
-    }
 
 }
