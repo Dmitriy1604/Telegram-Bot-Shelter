@@ -38,6 +38,7 @@ public class TelegramFacade {
     private final ShelterMenu shelterMenu;
     private final InlineMenuRepository inlineMenuRepository;
     private final UserStateRepository userStateRepository;
+    private final ReportService reportService;
 
 
     /**
@@ -74,6 +75,7 @@ public class TelegramFacade {
         if (message.startsWith("/test")) {
             logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             // метод для тестирования
+            reportService.runClosureScheduler();
             messageSender.sendMessage(sendMessage, user);
             return;
         }

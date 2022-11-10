@@ -15,3 +15,7 @@ databaseChangeLog:
       file: liquibase/sql/110_Animals_Reports.sql
   - include:
       file: liquibase/sql/111_fill.sql
+  - include:
+      file: liquibase/sql/120_animal_report_add_column.sql
+  - include:
+      file: liquibase/sql/130_message_for_send.sql

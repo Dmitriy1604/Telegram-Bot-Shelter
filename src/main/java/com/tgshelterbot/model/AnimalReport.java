@@ -1,14 +1,15 @@
 package com.tgshelterbot.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "animal_report")
@@ -22,6 +23,9 @@ public class AnimalReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "animal_id")
     private Long animal;

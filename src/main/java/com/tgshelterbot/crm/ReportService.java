@@ -10,10 +10,14 @@ import com.tgshelterbot.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -27,6 +31,7 @@ public class ReportService {
     private final AnimalReportSetupReportTypeRepository animalReportSetupReportTypeRepository;
     private final AnimalReportTypeRepository animalReportTypeRepository;
     private final AnimalRepository animalRepository;
+    private final MessageForSendRepository messageForSendRepository;
     private final MessageSender messageSender;
     private final SupportService supportService;
     private final StartMenu startMenu;
@@ -169,6 +174,7 @@ public class ReportService {
         AnimalReport animalReport = new AnimalReport();
         animalReport.setState(AnimalReportStateEnum.CREATED);
         animalReport.setAnimal(animalId);
+        animalReport.setUserId(user.getTelegramId());
         animalReport.setDtCreate(OffsetDateTime.now());
         AnimalReport save = animalReportRepository.save(animalReport);
         Long animalReportId = save.getId();
@@ -186,5 +192,36 @@ public class ReportService {
         });
         userService.update(user);
         return animalReportId;
+    }
+
+    /**
+     * Вызываем в планировщике, закрывает старые отчеты которые пользователь не заполнил корректно.
+     * Отправляем сообщение пользователю, что он балбес
+     */
+    @Transactional
+    public void runClosureScheduler() {
+        // Выбираем из базы не закрытые отчеты
+        OffsetDateTime offsetDateTime = OffsetDateTime.now().minusDays(2);
+        List<AnimalReport> reportList = animalReportRepository.findAllByStateAndDtCreateBefore(AnimalReportStateEnum.CREATED, offsetDateTime);
+        for (AnimalReport animalReport : reportList) {
+            Long userId = animalReport.getUserId();
+            log.error("reportList {}", animalReport);
+            animalReportDataRepository.updateSetCloseOldReport(animalReport.getId());
+            animalReport.setState(AnimalReportStateEnum.REJECTED);
+            animalReportRepository.save(animalReport);
+
+            // Отправляем сообщение в планировщик отправки сообщений. Можем установить отправку только в разумное время, допустим после 10 утра
+            String message = "У Вас отклонен отчет за дату: " +
+                    animalReport.getDtCreate().truncatedTo(ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
+                    + " по времени сдачи отчета. Будьте ответственнее. Надеюсь Вы забываете только отправлять отчеты, а не кормить питомца!";
+            log.debug("message to user: {}, {}", userId, message);
+            MessageForSend messageForSend = new MessageForSend();
+            messageForSend.setUserId(userId);
+            messageForSend.setDeleted(false);
+            messageForSend.setDtNeedSend(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS).plusSeconds(10));
+            messageForSend.setText(message);
+            //Так же можно отправить и в чат волонтерам.
+            messageForSendRepository.save(messageForSend);
+        }
     }
 }
