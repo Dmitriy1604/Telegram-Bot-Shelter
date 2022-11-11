@@ -2,7 +2,8 @@ package com.tgshelterbot.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.InlineMenuMapper;
+import com.tgshelterbot.mapper.InlineMenuMapperImpl;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.UserStateSpecial;
@@ -43,7 +44,7 @@ class InlineMenuControllerTest {
     @SpyBean
     private InlineMenuServiceImpl service;
     @SpyBean
-    private MapperDTO mapperDTO;
+    private InlineMenuMapperImpl mapperDTO;
     @InjectMocks
     private InlineMenuController controller;
     private final String URL = "/bot/inlineMenu";

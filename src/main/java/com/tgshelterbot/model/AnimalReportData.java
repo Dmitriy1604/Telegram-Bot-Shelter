@@ -27,11 +27,11 @@ public class AnimalReportData {
     private Long telegramUser;
 
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "animal_report_id", nullable = false)
     private AnimalReport animalReport;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "report_type_id", nullable = false)
     private AnimalReportType reportType;
 

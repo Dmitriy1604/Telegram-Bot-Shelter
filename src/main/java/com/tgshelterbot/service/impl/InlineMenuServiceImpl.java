@@ -1,6 +1,6 @@
 package com.tgshelterbot.service.impl;
 
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.InlineMenuMapper;
 import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.dto.InlineMenuDto;
 import com.tgshelterbot.repository.InlineMenuRepository;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class InlineMenuServiceImpl implements InlineMenuService {
     private final InlineMenuRepository menuRepository;
     private final UserStateRepository stateRepository;
-    private final MapperDTO mapper;
+    private final InlineMenuMapper mapper;
     private final String NOT_ACCEPTABLE = "Arguments is not acceptable.";// 406 will have been thrown
     private final String NOT_FOUND = "Menu doesn't exist";//404 will have been thrown
     private final String LOG_SAMPLE = "Service method {} was invoked with parameter :: {}";
