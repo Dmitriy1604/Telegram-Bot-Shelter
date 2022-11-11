@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.tgshelterbot.crm.InlineBuilder;
+import com.tgshelterbot.crm.LocalizedMessages;
 import com.tgshelterbot.crm.UserService;
 import com.tgshelterbot.model.InlineMenu;
 import com.tgshelterbot.model.User;
@@ -23,10 +24,10 @@ public class StartMenu {
     private final InlineMenuRepository inlineMenuRepository;
     private final InlineBuilder inlineBuilder;
     private final UserService userService;
+    private final LocalizedMessages lang;
 
-    /*TODO вынести в пропертя*/
     public EditMessageText getEditMessageStartMenu(@NotNull User user) {
-        String defaultMsg = "Я Вас не понял, нажмите /start для возврата в главное меню";
+        String defaultMsg = lang.get("start", user);
         InlineMenu inlineMenu = new InlineMenu();
         Optional<InlineMenu> menuOptional = inlineMenuRepository.findFirstByLanguageIdAndShelterIdAndQuestion(user.getLanguage(), user.getShelter(),
                 "/start");
@@ -43,7 +44,7 @@ public class StartMenu {
     }
 
     public SendMessage getSendMessageStartMenu(@NotNull User user) {
-        String defaultMsg = "Я Вас не понял, нажмите /start для возврата в главное меню";
+        String defaultMsg = lang.get("start", user);
         InlineMenu inlineMenu = new InlineMenu();
         Optional<InlineMenu> menuOptional = inlineMenuRepository.findFirstByLanguageIdAndShelterIdAndQuestion(user.getLanguage(), user.getShelter(),
                 "/start");

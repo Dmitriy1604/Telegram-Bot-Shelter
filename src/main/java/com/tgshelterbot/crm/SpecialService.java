@@ -41,6 +41,7 @@ public class SpecialService {
     private final AnimalReportTypeRepository animalReportTypeRepository;
     private final AnimalReportRepository animalReportRepository;
     private final ReportService reportService;
+    private final LocalizedMessages lang;
 
     /**
      * Метод обрабатывает сообщения, если у пользователя запущен специальный статус
@@ -76,7 +77,7 @@ public class SpecialService {
             messageSender.deleteOldMenu(user);
             user.setPhone(message);
             userService.update(user);
-            bot.execute(new SendMessage(user.getTelegramId(), "Thx!!!! " + message));
+            bot.execute(new SendMessage(user.getTelegramId(), lang.get("answer_get_phone") + message));
             messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
             return;
         }
@@ -99,7 +100,7 @@ public class SpecialService {
             reportService.processNullTag(user, update);
             return;
         }
-        message = "Что то пошло не так, не найдено сценария обработки. Нажмите /start";
+        message = lang.get("start");
         SendMessage sendMessage = new SendMessage(user.getTelegramId(), message);
         messageSender.sendMessage(sendMessage, user);
     }
@@ -138,9 +139,9 @@ public class SpecialService {
             user.setStateId(userState);
             userService.update(user);
 
-            SendMessage sendMessage = new SendMessage(user.getTelegramId(), "Для завершения чата нажмите кнопку EXIT")
+            SendMessage sendMessage = new SendMessage(user.getTelegramId(), lang.get("chat_exit_btn", user))
                     .replyMarkup(new ReplyKeyboardMarkup(
-                            new KeyboardButton("\uD83D\uDD1A EXIT"))
+                            new KeyboardButton("\uD83D\uDD1A"))
                             .resizeKeyboard(true)
                             .selective(true));
 
@@ -154,7 +155,7 @@ public class SpecialService {
             Animal animal = reportService.getAnimal(user);
             if (animal == null) {
                 messageSender.deleteOldMenu(user);
-                messageSender.sendMessage(new SendMessage(user.getTelegramId(), "❗️У Вас нет закрепленных животных"), user);
+                messageSender.sendMessage(new SendMessage(user.getTelegramId(), lang.get("you_dont_have_animals")), user);
                 messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
                 return;
             }
@@ -192,7 +193,7 @@ public class SpecialService {
                 if (report.getDtCreate().isAfter(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.WAIT)) {
                     user.setReportId(null);
                     messageSender.deleteOldMenu(user);
-                    bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, Вы уже заполнили все отчеты."));
+                    bot.execute(new SendMessage(user.getTelegramId(), lang.get("thx_all_report_complete", user)));
                     SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                     messageSender.sendMessage(sendMessageStartMenu, user);
                     return;
@@ -201,7 +202,7 @@ public class SpecialService {
                 if (report.getDtCreate().isAfter(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.ACCEPT)) {
                     user.setReportId(null);
                     messageSender.deleteOldMenu(user);
-                    bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, Вы уже заполнили все отчеты. А мы их уже приняли! Так держать!"));
+                    bot.execute(new SendMessage(user.getTelegramId(), lang.get("thx_all_report_complete_and_accepted", user)));
                     SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                     messageSender.sendMessage(sendMessageStartMenu, user);
                     return;
@@ -232,7 +233,7 @@ public class SpecialService {
         }
 
         EditMessageText editMessageText = new EditMessageText(user.getTelegramId(), user.getLastResponseStatemenuId().intValue(),
-                "Что то пошло не так, не найдено сценария обработки. Нажмите /start");
+                lang.get("start", user));
         messageSender.sendMessage(editMessageText, user);
     }
 

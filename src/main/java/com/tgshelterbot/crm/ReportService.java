@@ -39,6 +39,7 @@ public class ReportService {
     private final TelegramBot bot;
     private final FileService fileService;
     private final InlineBuilder inlineBuilder;
+    private final LocalizedMessages lang;
 
 
     public Animal getAnimal(User user) {
@@ -74,7 +75,7 @@ public class ReportService {
         boolean isOkType = false;
         Animal animal = getAnimal(user);
         if (animal == null) {
-            messageSender.sendMessage(new SendMessage(user.getTelegramId(), "Я Вас не понял, нажмите /start для возврата в главное меню"), user);
+            messageSender.sendMessage(new SendMessage(user.getTelegramId(), lang.get("start", user)), user);
             return;
         }
         Optional<AnimalReportType> optionalAnimalReportType = animalReportTypeRepository.findById(user.getReportId());

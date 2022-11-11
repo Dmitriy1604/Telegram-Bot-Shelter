@@ -39,6 +39,7 @@ public class TelegramFacade {
     private final InlineMenuRepository inlineMenuRepository;
     private final UserStateRepository userStateRepository;
     private final ReportService reportService;
+    private final LocalizedMessages lang;
 
 
     /**
@@ -61,7 +62,7 @@ public class TelegramFacade {
         }
 
         // Дефотное сообщение, если мы не распознали команду пользователя
-        SendMessage sendMessage = new SendMessage(idUser, "Я Вас не понял, нажмите /start для возврата в главное меню");
+        SendMessage sendMessage = new SendMessage(idUser, lang.get("start", user));
 
         // Обработка команды /start, начальная точка работы бота
         if (message.startsWith("/start")) {
@@ -75,16 +76,14 @@ public class TelegramFacade {
         if (message.startsWith("/test")) {
             logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             // метод для тестирования
-            reportService.runClosureScheduler();
             messageSender.sendMessage(sendMessage, user);
             return;
         }
 
         // Выйти в главное меню, с удалением ReplyKeyboard???
-        if (message.startsWith("\uD83D\uDD1A EXIT")) {
-            messageSender.sendMessage(new SendMessage(idUser, "Чат закончен, спасибо").replyMarkup(new ReplyKeyboardRemove())
+        if (message.startsWith("\uD83D\uDD1A")) {
+            messageSender.sendMessage(new SendMessage(idUser, lang.get("chat_end", user)).replyMarkup(new ReplyKeyboardRemove())
                     , user);
-
             messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
             return;
         }
@@ -157,7 +156,7 @@ public class TelegramFacade {
     }
 
     private String getMessage(Update update) {
-        String message = "Я Вас не понял, нажмите /start для возврата в главное меню";
+        String message = "^-^";
         if (update.message() != null && update.message().text() != null) {
             message = update.message().text();
         }
