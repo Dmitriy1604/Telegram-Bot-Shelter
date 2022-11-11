@@ -18,8 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
-import java.util.Optional;
+import java.util.Locale;
 
 import static com.tgshelterbot.model.UserStateSpecial.*;
 
@@ -158,37 +161,70 @@ public class SpecialService {
             UserState userState = getUserState(REPORT_STARTED);
             user.setStateId(userState);
 
-            //Если нет за сегодня, тогда генерируем
-            Optional<AnimalReport> animalReportOptional = animalReportRepository.findFirstByStateAndAnimalOrderById(AnimalReportStateEnum.CREATED, animal.getId());
-            Long reportId = null;
-            if (animalReportOptional.isEmpty()) {
-                LinkedHashSet<AnimalReportType> report = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
-                reportId = reportService.generateReport(animal.getId(), user, report);
-                user.setReportId(reportId);
-            } else {
-                reportId = animalReportOptional.get().getId();
-                user.setReportId(reportId);
-            }
-            LinkedHashSet<AnimalReportType> reportTypeSet = animalReportTypeRepository.findCreatedUserReport(animal.getAnimalTypeId(),
-                    user.getShelter(),
-                    user.getLanguage(),
-                    reportId
+
+            // Ищем все отчеты за сегодня и вчера, по всем статусам
+            LinkedHashSet<AnimalReport> reportSet = animalReportRepository.findAllByAnimalAndDtCreateAfterOrderByDtCreate(
+                    animal.getId(),
+                    OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS).minusDays(1)
             );
 
-            //Когда заполнили все отчеты
-            if (reportTypeSet.size() == 0) {
-                messageSender.deleteOldMenu(user);
-                bot.execute(new SendMessage(user.getTelegramId(), "\uD83C\uDF89 Спасибо, вы заполнили все отчеты."));
-                SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
-                messageSender.sendMessage(sendMessageStartMenu, user);
-                return;
+            AnimalReport animalReport = new AnimalReport();
+            LinkedHashSet<AnimalReportType> reportTypeSet = new LinkedHashSet<>();
+            // Генерим новый если пустой
+            if (reportSet.isEmpty()) {
+                reportTypeSet = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
+                animalReport = reportService.generateReport(animal, user);
+                user.setReportId(animalReport.getId());
             }
+
+            for (AnimalReport report : reportSet) {
+                // если есть за вчера созданные выдать его
+                if (report.getDtCreate().isBefore(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.CREATED)) {
+                    animalReport = report;
+                    break;
+                }
+                // если есть за сегодня, созданные выдать его
+                if (report.getDtCreate().isAfter(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.CREATED)) {
+                    animalReport = report;
+                    break;
+                }
+                // если есть ожидающие за сегодня - ждем принятия, выходим
+                if (report.getDtCreate().isAfter(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.WAIT)) {
+                    user.setReportId(null);
+                    messageSender.deleteOldMenu(user);
+                    bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, Вы уже заполнили все отчеты."));
+                    SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
+                    messageSender.sendMessage(sendMessageStartMenu, user);
+                    return;
+                }
+                // отчет сдали и уже приняли
+                if (report.getDtCreate().isAfter(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)) && report.getState().equals(AnimalReportStateEnum.ACCEPT)) {
+                    user.setReportId(null);
+                    messageSender.deleteOldMenu(user);
+                    bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, Вы уже заполнили все отчеты. А мы их уже приняли! Так держать!"));
+                    SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
+                    messageSender.sendMessage(sendMessageStartMenu, user);
+                    return;
+                }
+            }
+            // Генерируем репорт если его нет
+            if (animalReport.getId() == null) {
+                animalReport = reportService.generateReport(animal, user);
+                user.setReportId(animalReport.getId());
+            }
+            reportTypeSet = animalReportTypeRepository.findCreatedUserReport(animal.getAnimalTypeId(),
+                    user.getShelter(),
+                    user.getLanguage(),
+                    animalReport.getId()
+            );
+
             //Генерируем меню
             InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportTypeSet);
 
             EditMessageText editInlineMessageText = new EditMessageText(user.getTelegramId(),
                     user.getLastResponseStatemenuId().intValue(),
-                    "Отчет по питомцу: " + animal.getName() + "\n" +
+                    "Дата: " + animalReport.getDtCreate().truncatedTo(ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())) + "\n" +
+                            "Отчет по питомцу: " + animal.getName() + "\n" +
                             "выберите пункт меню, для отправки отчета").replyMarkup(inlineMenuReport);
             messageSender.sendMessage(editInlineMessageText, user);
             return;

@@ -143,8 +143,11 @@ public class ReportService {
             log.debug("AnimalTypeId={}\n AnimalReport.getId={}", animal.getAnimalTypeId(), animalReport.getId());
             //Проверка может все отчеты уже заполнили
             if (reportSetByAnimalType.size() == 0) {
+                animalReport.setState(AnimalReportStateEnum.WAIT);
+                animalReportRepository.save(animalReport);
+                user.setReportId(null);
                 messageSender.deleteOldMenu(user);
-                bot.execute(new SendMessage(user.getTelegramId(), "Спасибо, вы заполнили все отчеты."));
+                bot.execute(new SendMessage(user.getTelegramId(), "\uD83C\uDF89 Спасибо, вы заполнили все отчеты."));
                 SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
                 messageSender.sendMessage(sendMessageStartMenu, user);
                 return;
@@ -169,19 +172,25 @@ public class ReportService {
 
     }
 
-    public Long generateReport(Long animalId, User user, LinkedHashSet<AnimalReportType> reportSetByAnimalType) {
+    public AnimalReport generateReport(Animal animal, User user) {
         //Вставим отчет в базу
         AnimalReport animalReport = new AnimalReport();
         animalReport.setState(AnimalReportStateEnum.CREATED);
-        animalReport.setAnimal(animalId);
+        animalReport.setAnimal(animal.getId());
         animalReport.setUserId(user.getTelegramId());
         animalReport.setDtCreate(OffsetDateTime.now());
         AnimalReport save = animalReportRepository.save(animalReport);
         Long animalReportId = save.getId();
         //сохраним айди отчета в текущего отчета в пользователя
         user.setReportId(animalReportId);
+
+        LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(),
+                user.getShelter(),
+                user.getLanguage()
+        );
+
         //Генерируем типы
-        reportSetByAnimalType.forEach(animalReportType -> {
+        for (AnimalReportType animalReportType : reportSetByAnimalType) {
             AnimalReportData reportData = new AnimalReportData();
             reportData.setTelegramUser(user.getTelegramId());
             reportData.setAnimalReport(animalReport);
@@ -189,9 +198,9 @@ public class ReportService {
             reportData.setState(AnimalReportStateEnum.CREATED);
             reportData.setDtCreate(OffsetDateTime.now());
             animalReportDataRepository.save(reportData);
-        });
+        }
         userService.update(user);
-        return animalReportId;
+        return animalReport;
     }
 
     /**
