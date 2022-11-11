@@ -1,6 +1,7 @@
 package com.tgshelterbot.controller;
 
 import com.tgshelterbot.model.dto.AnimalDto;
+import com.tgshelterbot.model.dto.AnimalSimpleDto;
 import com.tgshelterbot.model.dto.ShelterDto;
 import com.tgshelterbot.service.AnimalService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,6 +37,12 @@ public class AnimalController {
     public List<AnimalDto> getAll() {
         return service.getAll();
     }
+
+    @GetMapping("/simple")
+    public List<AnimalSimpleDto> getAllSimpleAnimal() {
+        return service.getAllSimpleAnimal();
+    }
+
 
     @ApiResponses({
             @ApiResponse(

@@ -7,22 +7,18 @@ import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.SendResponse;
 import com.tgshelterbot.crm.specialmenu.ShelterMenu;
-import com.tgshelterbot.crm.specialmenu.SpecialService;
 import com.tgshelterbot.crm.specialmenu.StartMenu;
-import com.tgshelterbot.model.*;
-import com.tgshelterbot.repository.AnimalReportTypeRepository;
+import com.tgshelterbot.model.InlineMenu;
+import com.tgshelterbot.model.User;
+import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.InlineMenuRepository;
 import com.tgshelterbot.repository.UserStateRepository;
-import com.tgshelterbot.service.UserService;
-import com.tgshelterbot.service.impl.ReportServiceImpl;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashSet;
 import java.util.Optional;
 
 
@@ -42,9 +38,7 @@ public class TelegramFacade {
     private final ShelterMenu shelterMenu;
     private final InlineMenuRepository inlineMenuRepository;
     private final UserStateRepository userStateRepository;
-
-    private final AnimalReportTypeRepository animalReportTypeRepository;
-    private final ReportServiceImpl reportService;
+    private final ReportService reportService;
 
 
     /**
@@ -54,13 +48,10 @@ public class TelegramFacade {
      * @param update Update
      */
     public void processUpdate(Update update) {
-        // Готовы отправить сообщение. Отправка и обработка ответа, в самом конце метода и обновление юзера
-        boolean isReadyToSend = false;
         String message = getMessage(update);
         String tag = null;
         Long idUser = userService.getIdUser(update);
         User user = userService.findUserOrCreate(idUser);
-        SendResponse execute = null;
         EditMessageText editInlineMessageText = null;
         logger.trace("idUser {}", idUser);
 
@@ -70,7 +61,7 @@ public class TelegramFacade {
         }
 
         // Дефотное сообщение, если мы не распознали команду пользователя
-        SendMessage sendMessage = new SendMessage(idUser, message);
+        SendMessage sendMessage = new SendMessage(idUser, "Я Вас не понял, нажмите /start для возврата в главное меню");
 
         // Обработка команды /start, начальная точка работы бота
         if (message.startsWith("/start")) {
@@ -83,20 +74,18 @@ public class TelegramFacade {
         }
         if (message.startsWith("/test")) {
             logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            Animal animal = reportService.getAnimal(user);
-            LinkedHashSet<AnimalReportType> reportSetByAnimalType = animalReportTypeRepository.getReportSetByAnimalType(animal.getAnimalTypeId(), user.getShelter(), user.getLanguage());
-            reportSetByAnimalType.stream().forEach(System.out::println);
-            logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            InlineKeyboardMarkup inlineMenuReport = inlineBuilder.getInlineMenuReport(reportSetByAnimalType);
-            bot.execute(new SendMessage(idUser, "Сейчас случится магия!").replyMarkup(inlineMenuReport));
+            // метод для тестирования
+            reportService.runClosureScheduler();
+            messageSender.sendMessage(sendMessage, user);
             return;
         }
 
         // Выйти в главное меню, с удалением ReplyKeyboard???
         if (message.startsWith("\uD83D\uDD1A EXIT")) {
-            bot.execute(new SendMessage(idUser, "Чат закончен, спасибки").replyMarkup(new ReplyKeyboardRemove()));
-            SendMessage sendMessageStartMenu = startMenu.getSendMessageStartMenu(user);
-            messageSender.sendMessage(sendMessageStartMenu, user);
+            messageSender.sendMessage(new SendMessage(idUser, "Чат закончен, спасибо").replyMarkup(new ReplyKeyboardRemove())
+                    , user);
+
+            messageSender.sendMessage(startMenu.getSendMessageStartMenu(user), user);
             return;
         }
 
@@ -132,11 +121,10 @@ public class TelegramFacade {
                     );
             // Получаем меню из базы по TagCallback
             if (menuOptional.isEmpty() && user.getStateId().getTagSpecial() != null) {
-                editInlineMessageText = specialService.checkSpecialStatus(user, update);
-                messageSender.sendMessage(editInlineMessageText, user);
+                specialService.checkSpecialStatus(user, update);
                 return;
             }
-            if (!isReadyToSend && menuOptional.isPresent()) {
+            if (menuOptional.isPresent()) {
                 InlineMenu menu = menuOptional.get();
                 message = menu.getAnswer();
                 // Сетим новый статус
@@ -145,8 +133,7 @@ public class TelegramFacade {
                 }
                 // Обработка кнопки меню, когда есть специальный статус(действие/меню) по нажатию на кнопку
                 if (user.getStateId().getTagSpecial() != null) {
-                    editInlineMessageText = specialService.checkSpecialStatusInMenu(user, update, menu);
-                    messageSender.sendMessage(editInlineMessageText, user);
+                    specialService.checkSpecialStatusInMenu(user, update, menu);
                     return;
                 }
 

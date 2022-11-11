@@ -1,15 +1,19 @@
 package com.tgshelterbot.service.impl;
 
 import com.tgshelterbot.mapper.AnimalMapper;
+import com.tgshelterbot.mapper.AnimalSimpleMapper;
 import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.AnimalType;
 import com.tgshelterbot.model.dto.AnimalDto;
+import com.tgshelterbot.model.dto.AnimalSimpleDto;
+import com.tgshelterbot.model.dto.AnimalsSimple;
 import com.tgshelterbot.repository.AnimalRepository;
 import com.tgshelterbot.repository.AnimalTypeRepository;
 import com.tgshelterbot.repository.ShelterRepository;
 import com.tgshelterbot.repository.UserRepository;
 import com.tgshelterbot.service.AnimalService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class AnimalServiceImpl implements AnimalService {
     private final AnimalRepository repository;
@@ -25,10 +30,18 @@ public class AnimalServiceImpl implements AnimalService {
     private final UserRepository userRepository;
     private final ShelterRepository shelterRepository;
     private final AnimalMapper animalMapper;
+    private final AnimalSimpleMapper animalSimpleMapper;
 
     @Override
     public List<AnimalDto> getAll() {
         return repository.findAll().stream().map(animalMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AnimalSimpleDto> getAllSimpleAnimal() {
+//        return repository.findAll().stream().map(animal -> animalSimpleMapper.toDto(animal, shelterRepository.findById(animal.getShelterId()).get())).collect(Collectors.toList());
+        List<AnimalsSimple> simple = repository.findAllAnimalsSimple();
+        return animalSimpleMapper.toDtos(simple);
     }
 
     @Override

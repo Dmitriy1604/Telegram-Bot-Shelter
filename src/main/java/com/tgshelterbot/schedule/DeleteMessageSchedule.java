@@ -23,7 +23,7 @@ public class DeleteMessageSchedule {
         this.repository = repository;
     }
 
-    @Scheduled(fixedRate = 600_000)
+    @Scheduled(fixedRate = 600_000_000)
     public void deleteMessage() {
         List<MessageForDelete> deleteList = repository.findAll();
 

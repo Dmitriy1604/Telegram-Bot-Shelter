@@ -1,4 +1,4 @@
-package com.tgshelterbot.service;
+package com.tgshelterbot.crm;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.impl.FileApi;
@@ -45,15 +45,13 @@ public class FileService {
         if (fileId == null) {
             return null;
         }
-        Long idUser = userService.getIdUser(update);
 
         GetFileResponse getFileResponse = bot.execute(new GetFile(fileId));
         File file = getFileResponse.file(); // com.pengrad.telegrambot.model.File
         FileApi fileApi = new FileApi(token);
 
         String fullFilePath = fileApi.getFullFilePath(file.filePath());
-        String localPathFile = saveFile(fullFilePath, update);
-        return localPathFile;
+        return saveFile(fullFilePath, update);
     }
 
     public String getTelegramFileId(Update update) {
@@ -119,34 +117,24 @@ public class FileService {
     }
 
     @SneakyThrows
-    public byte[] getLocalFile(String localPath){
+    public byte[] getLocalFile(String localPath) {
         return Files.readAllBytes(Path.of(localPath));
     }
 
-    public boolean validateSize(GetFileResponse fileResponse){
+    public boolean validateSize(GetFileResponse fileResponse) {
         /*TODO сделать проверку размера не меньше 100 кб и не больше 10 мб
-        * */
+         * */
         return true;
     }
 
-    public Long  saveFileInDB(String localPath, User user){
+    public Long saveFileInDB(String localPath, User user) {
         /*TODO логика сохранения отчета в таблицу с отчетами*/
         return 0L;
     }
+
     //отправка файла с диска
-    public SendDocument sendDocument(long idUser, String localPath, String description){
-        SendDocument request = new SendDocument(idUser, getLocalFile(localPath)).fileName(getFileName(localPath)).caption(description);
-        return request;
+    public SendDocument sendDocument(long idUser, String localPath, String description) {
+        return new SendDocument(idUser, getLocalFile(localPath)).fileName(getFileName(localPath)).caption(description);
     }
-
-    /*
-    *   byte[] bytes = getLocalFile(localPathFile);
-        log.debug("localPathFile: {}", localPathFile);
-        String fileName = getFileName(localPathFile);
-        log.debug("fileName: {}", fileName);
-        SendDocument request = new SendDocument(idUser, bytes).fileName(fileName);
-        SendResponse execute = bot.execute(request);
-    * */
-
 
 }

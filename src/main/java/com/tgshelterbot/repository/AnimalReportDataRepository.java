@@ -3,9 +3,9 @@ package com.tgshelterbot.repository;
 import com.tgshelterbot.model.AnimalReportData;
 import com.tgshelterbot.model.AnimalReportStateEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Collection;
 import java.util.Optional;
 
 public interface AnimalReportDataRepository extends JpaRepository<AnimalReportData, Long> {
@@ -13,4 +13,8 @@ public interface AnimalReportDataRepository extends JpaRepository<AnimalReportDa
     Optional<AnimalReportData> findCurrentReport(Long reportId, Long reportTypeId);
 
     Collection<AnimalReportData>findAllByState(AnimalReportStateEnum stateEnum);
+
+    @Modifying
+    @Query(value = "update animal_report_data set state='REJECTED' where animal_report_id=? and state='CREATED'", nativeQuery = true)
+    void updateSetCloseOldReport(long animalReportId);
 }
