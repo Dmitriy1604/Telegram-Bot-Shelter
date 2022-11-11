@@ -40,7 +40,6 @@ public class ShelterServiceImpl implements ShelterService {
         Shelter shelter = repository.findById(id).orElseThrow(ShelterIsNotExistsException::new);
         shelter.setId(id);
         shelter.setName(dto.getName());
-
         return shelterMapper.toDto(repository.save(shelter));
     }
 
@@ -50,5 +49,4 @@ public class ShelterServiceImpl implements ShelterService {
         repository.delete(shelter);
         return shelterMapper.toDto(shelter);
     }
-
 }

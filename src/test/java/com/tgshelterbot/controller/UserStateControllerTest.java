@@ -2,7 +2,8 @@ package com.tgshelterbot.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.UserStateMapper;
+import com.tgshelterbot.mapper.UserStateMapperImpl;
 import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.UserStateSpecial;
 import com.tgshelterbot.repository.UserStateRepository;
@@ -10,7 +11,6 @@ import com.tgshelterbot.service.impl.UserStateServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,7 +38,7 @@ class UserStateControllerTest {
     @SpyBean
     private UserStateServiceImpl stateService;
     @SpyBean
-    MapperDTO dtoMapper;
+    UserStateMapperImpl dtoMapper;
     private UserState userState;
     @InjectMocks
     private UserStateController controller;

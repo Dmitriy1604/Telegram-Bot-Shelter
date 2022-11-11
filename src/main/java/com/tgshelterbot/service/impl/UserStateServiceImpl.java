@@ -1,6 +1,6 @@
 package com.tgshelterbot.service.impl;
 
-import com.tgshelterbot.mapper.MapperDTO;
+import com.tgshelterbot.mapper.UserStateMapper;
 import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.dto.UserStateDto;
 import com.tgshelterbot.repository.UserStateRepository;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class UserStateServiceImpl implements UserStateService {
 
     private final UserStateRepository stateRepository;
-    private final MapperDTO dtoMapper;
+    private final UserStateMapper dtoMapper;
     private final String LOG_SAMPLE = "Service method {} was invoked with parameter :: {}";
     private final String NOT_FOUND = "User state doesn't exist";
     private final String NOT_ACCEPTABLE = "User state field should be assigned by admins only!";
