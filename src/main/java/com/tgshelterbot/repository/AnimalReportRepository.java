@@ -22,4 +22,7 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 
     @Query(value = "SELECT * FROM animal_report WHERE dt_create > now() - INTERVAL '1 MINUTE'", nativeQuery = true)
     Collection<AnimalReport> findAllForToday();
+
+    @Query(value = "SELECT * FROM animal_report WHERE dt_create > now() - INTERVAL '2 DAYS'", nativeQuery = true)
+    Collection<AnimalReport> findAllForTwoDays();
 }
