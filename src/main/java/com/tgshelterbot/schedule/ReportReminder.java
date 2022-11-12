@@ -2,6 +2,7 @@ package com.tgshelterbot.schedule;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.SendResponse;
 import com.tgshelterbot.model.*;
 import com.tgshelterbot.repository.AnimalReportDataRepository;
 import com.tgshelterbot.repository.AnimalReportRepository;
@@ -9,6 +10,7 @@ import com.tgshelterbot.repository.AnimalReportTypeRepository;
 import com.tgshelterbot.repository.AnimalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,9 @@ public class ReportReminder {
 
     private final AnimalRepository animalRepository;
     private final TelegramBot bot;
+
+    @Value("${telegram.bot.support.chat}")
+    private String chatId;
 
     /**
      * Каждые 6 часов напоминает о необходимости сдать все или недостающие отчёты.
@@ -70,6 +75,19 @@ public class ReportReminder {
     /**
      * При отсутствии отчётов в течении 2 дней бросает сообщение в чат поддержки о нарушении сдачи отчётов.
      */
+    @Scheduled(cron = "0 0 21 */2 * *")
     public void remindForVolunteer() {
+        String msgPattern = "Новый хозяин с id: %d не сдаёт отчёты по питомцу с id: %d и кличкой %s";
+        animalRepository.findAllByUserIdNotNull()
+                .forEach(animal -> animalReportRepository.findAllForTwoDays()
+                        .stream()
+                        .filter(animalReport -> animalReport.getUserId().equals(animal.getUserId()))
+                        .findAny()
+                        .orElseGet(() -> {
+                            SendResponse response = bot.execute(new SendMessage(chatId,
+                                    String.format(msgPattern, animal.getUserId(), animal.getId(), animal.getName())));
+                            log.info("Message to support chat: {}", response);
+                            return null;
+                        }));
     }
 }
