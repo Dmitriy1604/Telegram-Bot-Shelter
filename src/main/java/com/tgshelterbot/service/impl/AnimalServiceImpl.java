@@ -1,9 +1,13 @@
 package com.tgshelterbot.service.impl;
 
+import com.pengrad.telegrambot.request.SendMessage;
+import com.tgshelterbot.crm.LocalizedMessages;
+import com.tgshelterbot.crm.MessageSender;
 import com.tgshelterbot.mapper.AnimalMapper;
 import com.tgshelterbot.mapper.AnimalSimpleMapper;
 import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.AnimalType;
+import com.tgshelterbot.model.User;
 import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.model.dto.AnimalSimpleDto;
 import com.tgshelterbot.model.dto.AnimalsSimple;
@@ -32,6 +36,8 @@ public class AnimalServiceImpl implements AnimalService {
     private final ShelterRepository shelterRepository;
     private final AnimalMapper animalMapper;
     private final AnimalSimpleMapper animalSimpleMapper;
+    private final LocalizedMessages locale;
+    private final MessageSender messageSender;
 
     @Override
     public List<AnimalDto> getAll() {
@@ -100,10 +106,19 @@ public class AnimalServiceImpl implements AnimalService {
     @Override
     public AnimalDto extendPeriod(Long id, Animal.TimeFrame timeFrame) {
         Animal animal = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("animal doesn't exist"));
+        User user = userRepository.findByTelegramId(animal.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User doesn't exist"));
         if (timeFrame.getPeriod() == 0) {
             animal.setDaysForTest(0);
+            messageSender.sendMessage(new SendMessage(user.getTelegramId(),
+                    String.format(locale.get("congrats.message"), animal.getName())), user);
         } else {
             animal.setDaysForTest(animal.getDaysForTest() + timeFrame.getPeriod());
+            messageSender.sendMessage(new SendMessage(user.getTelegramId(),
+                    String.format(locale.get("period.extended"),
+                            animal.getName(),
+                            timeFrame.getPeriod(),
+                            animal.getDaysForTest())), user);
         }
         return animalMapper.toDto(repository.save(animal));
     }
