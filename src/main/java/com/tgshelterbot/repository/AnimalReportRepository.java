@@ -20,7 +20,7 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 
     List<AnimalReport> findAllByStateAndDtCreateBefore(AnimalReportStateEnum state, OffsetDateTime dtCreate);
 
-    @Query(value = "SELECT * FROM animal_report WHERE dt_create > now() - INTERVAL '1 MINUTE'", nativeQuery = true)
+    @Query(value = "SELECT * FROM animal_report WHERE dt_create > CAST(now() AS DATE )", nativeQuery = true)
     Collection<AnimalReport> findAllForToday();
 
     @Query(value = "SELECT * FROM animal_report WHERE dt_create > now() - INTERVAL '2 DAYS'", nativeQuery = true)
