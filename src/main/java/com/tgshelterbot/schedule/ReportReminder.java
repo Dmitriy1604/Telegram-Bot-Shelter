@@ -40,7 +40,7 @@ public class ReportReminder {
      */
     @Scheduled(fixedDelay = 21_600_000_000_000L)//6 hours
     public void remindForUsers() {
-        Collection<Animal> animals = animalRepository.findAllByUserIdNotNull();
+        Collection<Animal> animals = animalRepository.findAllByUserIdNotNullAndState(Animal.AnimalStateEnum.IN_TEST);
         for (Animal animal : animals) {
             //берём все отчеты за сегодня
             Collection<AnimalReport> animalReports = animalReportRepository.findAllForToday()
@@ -78,7 +78,7 @@ public class ReportReminder {
     @Scheduled(cron = "0 0 21 */2 * *")
     public void remindForVolunteer() {
         String msgPattern = "Новый хозяин с id: %d не сдаёт отчёты по питомцу с id: %d и кличкой %s";
-        animalRepository.findAllByUserIdNotNull()
+        animalRepository.findAllByUserIdNotNullAndState(Animal.AnimalStateEnum.IN_TEST)
                 .forEach(animal -> animalReportRepository.findAllForTwoDays()
                         .stream()
                         .filter(animalReport -> animalReport.getUserId().equals(animal.getUserId()))
