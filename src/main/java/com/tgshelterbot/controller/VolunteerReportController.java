@@ -5,11 +5,9 @@ import com.tgshelterbot.model.dto.AnimalReportDto;
 import com.tgshelterbot.service.VolunteerReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -35,6 +33,16 @@ public class VolunteerReportController {
                                                                   @RequestParam(value = "state", required = false) AnimalReportStateEnum stateEnum
     ) {
         return volunteerReportService.getAllReportsInPeriodFilterState(page, limit, dtStart, dtEnd, stateEnum);
+    }
+
+    @GetMapping("/{id}")
+    public AnimalReportDto getReportForView(@PathVariable long id) {
+        return volunteerReportService.getReportForView(id);
+    }
+
+    @PutMapping("/{id}")
+    public AnimalReportDto getReportForView(@PathVariable long id, @Valid @RequestBody AnimalReportDto dto) {
+        return volunteerReportService.viewReport(id, dto);
     }
 
 

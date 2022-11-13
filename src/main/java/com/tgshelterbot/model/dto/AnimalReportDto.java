@@ -16,4 +16,5 @@ public class AnimalReportDto implements Serializable {
     private OffsetDateTime dtAccept;
     private AnimalReportStateEnum state;
     private List<AnimalReportDataDto> animalReportDataDtos;
+    private String message;
 }

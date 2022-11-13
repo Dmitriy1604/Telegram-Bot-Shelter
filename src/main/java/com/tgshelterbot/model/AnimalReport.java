@@ -1,5 +1,6 @@
 package com.tgshelterbot.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -40,6 +42,13 @@ public class AnimalReport {
     @Enumerated(EnumType.STRING)
     @Type(type = "report_state")
     private AnimalReportStateEnum state;
+
+    @Column(name = "message")
+    private String message;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "animalReport")
+    @JsonIgnore
+    private List<AnimalReportData> animalReportDataList;
 
     @Override
     public boolean equals(Object o) {

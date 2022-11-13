@@ -12,5 +12,7 @@ public interface VolunteerReportService {
     List<AnimalReportDto> getAllReportsInPeriodFilterState(int page, int size, OffsetDateTime dtStart, OffsetDateTime dtEnd, AnimalReportStateEnum stateEnum);
 
 
-    void getReportForView(Long reportId);
+    AnimalReportDto getReportForView(Long reportId);
+
+    AnimalReportDto viewReport(Long reportId, AnimalReportDto animalReportDto);
 }
