@@ -24,7 +24,6 @@ public class Animal {
     @Column(name = "id", nullable = false)
     private Long id;
 
-
     @Column(name = "animal_type_id", nullable = false)
     private Long animalTypeId;
 
@@ -53,6 +52,19 @@ public class Animal {
 
     public enum AnimalStateEnum {
         IN_SHELTER, IN_TEST, HAPPY_END
+    }
+
+    public enum TimeFrame {
+        APPROVE(0), HALF_PERIOD(14), FULL_PERIOD(30);
+        private final int period;
+
+        TimeFrame(int period) {
+            this.period = period;
+        }
+
+        public int getPeriod() {
+            return period;
+        }
     }
 
     @Override

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,17 +70,14 @@ public class AnimalServiceImpl implements AnimalService {
         shelterRepository.findById(dto.getShelterId()).orElseThrow(EntityNotFoundException::new);
         userRepository.findByTelegramId(dto.getUserId()).orElseThrow(EntityNotFoundException::new);
         AnimalType animalType = animalTypeRepository.findById(dto.getId()).orElseThrow(EntityNotFoundException::new);
-
         Animal update = animalMapper.toEntity(dto);
         update.setId(id);
         update.setDtCreate(original.getDtCreate());
-
         if (dto.getUserId() != null && original.getUserId() == null) {
             update.setDtStartTest(OffsetDateTime.now());
             update.setState(Animal.AnimalStateEnum.IN_TEST);
             update.setDaysForTest(animalType.getDaysForTest());
         }
-
         Animal save = repository.save(update);
         return animalMapper.toDto(save);
     }
@@ -89,5 +87,24 @@ public class AnimalServiceImpl implements AnimalService {
         Animal animal = repository.findById(id).orElseThrow(EntityNotFoundException::new);
         repository.delete(animal);
         return animalMapper.toDto(animal);
+    }
+
+    @Override
+    public Collection<AnimalDto> findAllBySateInTest(Animal.AnimalStateEnum stateEnum) {
+        return repository.findAllByUserIdNotNullAndState(stateEnum)
+                .stream()
+                .map(animalMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public AnimalDto extendPeriod(Long id, Animal.TimeFrame timeFrame) {
+        Animal animal = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("animal doesn't exist"));
+        if (timeFrame.getPeriod() == 0) {
+            animal.setDaysForTest(0);
+        } else {
+            animal.setDaysForTest(animal.getDaysForTest() + timeFrame.getPeriod());
+        }
+        return animalMapper.toDto(repository.save(animal));
     }
 }
