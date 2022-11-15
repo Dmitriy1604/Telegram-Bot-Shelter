@@ -2,6 +2,7 @@ package com.tgshelterbot.controller;
 
 import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.dto.AnimalDto;
+import com.tgshelterbot.model.dto.SummarizedReportDto;
 import com.tgshelterbot.service.AnimalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,5 +47,17 @@ public class AnimalDecisionController {
     @PutMapping("/{id}/extend_or_approve")
     public AnimalDto extendTestTimeFrame(@PathVariable Long id, @RequestParam Animal.TimeFrame timeFrame) {
         return animalService.extendPeriod(id, timeFrame);
+    }
+
+    @Operation(summary = "Get summarised report by animal id to make a decision.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Get all report info that needed to make a decision.",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Collection.class)))
+    })
+    @GetMapping("/{id}")
+    public Collection<SummarizedReportDto> getAllSumReports(@PathVariable Long id) {
+        return animalService.getAllSummarized(id);
     }
 }

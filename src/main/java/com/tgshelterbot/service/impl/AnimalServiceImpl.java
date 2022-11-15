@@ -5,16 +5,12 @@ import com.tgshelterbot.crm.LocalizedMessages;
 import com.tgshelterbot.crm.MessageSender;
 import com.tgshelterbot.mapper.AnimalMapper;
 import com.tgshelterbot.mapper.AnimalSimpleMapper;
+import com.tgshelterbot.mapper.SummarizedReportMapper;
 import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.AnimalType;
 import com.tgshelterbot.model.User;
-import com.tgshelterbot.model.dto.AnimalDto;
-import com.tgshelterbot.model.dto.AnimalSimpleDto;
-import com.tgshelterbot.model.dto.AnimalsSimple;
-import com.tgshelterbot.repository.AnimalRepository;
-import com.tgshelterbot.repository.AnimalTypeRepository;
-import com.tgshelterbot.repository.ShelterRepository;
-import com.tgshelterbot.repository.UserRepository;
+import com.tgshelterbot.model.dto.*;
+import com.tgshelterbot.repository.*;
 import com.tgshelterbot.service.AnimalService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +35,7 @@ public class AnimalServiceImpl implements AnimalService {
     private final AnimalSimpleMapper animalSimpleMapper;
     private final LocalizedMessages locale;
     private final MessageSender messageSender;
+    private final SummarizedReportMapper summarizedReportMapper;
 
     @Override
     public List<AnimalDto> getAll() {
@@ -121,5 +119,12 @@ public class AnimalServiceImpl implements AnimalService {
                             animal.getDaysForTest())), user);
         }
         return animalMapper.toDto(repository.save(animal));
+    }
+
+    public Collection<SummarizedReportDto> getAllSummarized(Long id) {
+        Collection<SummarizedReport> summarizedReports = repository.getAllAndSummarizeReport(id);
+        return summarizedReports.stream()
+                .map(summarizedReportMapper::toDto)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }
