@@ -3,7 +3,7 @@ package com.tgshelterbot.service;
 import com.tgshelterbot.model.Animal;
 import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.model.dto.AnimalSimpleDto;
-import org.springframework.data.domain.PageRequest;
+import com.tgshelterbot.model.dto.SummarizedReportDto;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,4 +24,6 @@ public interface AnimalService {
     Collection<AnimalDto> findAllBySateInTest(Animal.AnimalStateEnum stateEnum);
 
     AnimalDto extendPeriod(Long id, Animal.TimeFrame timeFrame);
+
+    Collection<SummarizedReportDto> getAllSummarized(Long id);
 }
