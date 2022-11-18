@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class SupportService {
     private final TelegramBot bot;
     @Value("${telegram.bot.support.chat}")
-    private final Long supportChat;
+    private Long supportChat;
 
     private final Logger logger = LoggerFactory.getLogger(SupportService.class);
 
