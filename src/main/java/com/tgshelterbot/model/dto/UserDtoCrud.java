@@ -10,7 +10,6 @@ public class UserDtoCrud implements UserDtoCrudSerialized {
     private Long telegramId;
     private Long language;
     private Long shelter;
-    private Long userStateId;
     private Long reportId;
     private String phone;
     private String name;

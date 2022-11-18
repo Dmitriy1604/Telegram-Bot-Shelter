@@ -1,6 +1,5 @@
 package com.tgshelterbot.controller;
 
-import com.tgshelterbot.model.dto.AnimalDto;
 import com.tgshelterbot.model.dto.UserDtoCrud;
 import com.tgshelterbot.model.dto.UserDtoCrudSerialized;
 import com.tgshelterbot.service.UserCRUDService;
@@ -29,7 +28,7 @@ public class UserController {
                             schema = @Schema(implementation = Collection.class))),
     })
     @GetMapping
-    public Collection<UserDtoCrudSerialized> findAllUsers() {
+    public Collection<UserDtoCrudSerialized> getAllUsers() {
         return crudService.getAllUsers();
     }
 
@@ -41,7 +40,7 @@ public class UserController {
                             schema = @Schema(implementation = Collection.class))),
     })
     @GetMapping("/{id}")
-    public UserDtoCrudSerialized getOneUser(@PathVariable Long id) {
+    public UserDtoCrudSerialized getUserById(@PathVariable Long id) {
         return crudService.getUser(id);
     }
 
@@ -50,10 +49,11 @@ public class UserController {
             @ApiResponse(responseCode = "200",
                     description = "Performed.",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = AnimalDto.class))), @ApiResponse(responseCode = "404",
-            description = "User not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = AnimalDto.class)))
+                            schema = @Schema(implementation = UserDtoCrudSerialized.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found.",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserDtoCrudSerialized.class)))
     })
     @PutMapping
     public UserDtoCrudSerialized updateUser(@RequestBody UserDtoCrud userDto) {
@@ -65,10 +65,11 @@ public class UserController {
             @ApiResponse(responseCode = "200",
                     description = "Performed.",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = AnimalDto.class))), @ApiResponse(responseCode = "404",
-            description = "User not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = AnimalDto.class)))
+                            schema = @Schema(implementation = UserDtoCrudSerialized.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found.",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserDtoCrudSerialized.class)))
     })
     @DeleteMapping("{id}")
     public UserDtoCrudSerialized removeUser(@PathVariable Long id) {

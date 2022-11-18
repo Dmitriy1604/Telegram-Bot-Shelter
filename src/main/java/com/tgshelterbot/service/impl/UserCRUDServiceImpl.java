@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserCURUServiceImpl implements UserCRUDService {
+public class UserCRUDServiceImpl implements UserCRUDService {
     private final UserRepository userRepository;
     private final LanguageRepository languageRepository;
     private final ShelterRepository shelterRepository;
@@ -45,10 +45,6 @@ public class UserCURUServiceImpl implements UserCRUDService {
                 .orElseThrow(() -> new EntityNotFoundException("Language not found"));
         shelterRepository.findById(userDto.getShelter())
                 .orElseThrow(() -> new EntityNotFoundException("Shelter not found"));
-        stateRepository.findById(userDto.getId()).orElseThrow(() -> new EntityNotFoundException("UserState not found"));
-        reportRepository.findById(userDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("AnimalReport not found"));
-//        return userMapper.toDto(userRepository.save(userMapper.toEntity(userDto)));
         return userMapper.toDto(userRepository.save(userMapper.toEntity(userDto)));
     }
 
