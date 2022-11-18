@@ -1,7 +1,5 @@
 package com.tgshelterbot.model.dto;
 
-import java.time.OffsetDateTime;
-
 public interface UserDtoCrudSerialized {
     Long getId();
 
@@ -11,8 +9,6 @@ public interface UserDtoCrudSerialized {
 
     Long getShelter();
 
-    Long getUserStateId();
-
     Long getReportId();
 
     String getPhone();
@@ -21,7 +17,7 @@ public interface UserDtoCrudSerialized {
 
     String getInfo();
 
-    OffsetDateTime getDtCreate();
+    java.time.OffsetDateTime getDtCreate();
 
     void setId(Long id);
 
@@ -31,8 +27,6 @@ public interface UserDtoCrudSerialized {
 
     void setShelter(Long shelter);
 
-    void setUserStateId(Long userStateId);
-
     void setReportId(Long reportId);
 
     void setPhone(String phone);
@@ -41,5 +35,5 @@ public interface UserDtoCrudSerialized {
 
     void setInfo(String info);
 
-    void setDtCreate(OffsetDateTime dtCreate);
+    void setDtCreate(java.time.OffsetDateTime dtCreate);
 }
