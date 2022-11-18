@@ -41,7 +41,11 @@ public class ReportService {
     private final InlineBuilder inlineBuilder;
     private final LocalizedMessages lang;
 
-
+    /**
+     * Поиск всех животного у пользователя
+     * @param user User
+     * @return Animal
+     */
     public Animal getAnimal(User user) {
         List<Animal> animalsByUserId = animalRepository.findAnimalsByUserId(user.getTelegramId());
         Optional<Animal> animalOptional = animalsByUserId.stream()

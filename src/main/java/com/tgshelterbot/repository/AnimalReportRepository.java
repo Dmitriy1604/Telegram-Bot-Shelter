@@ -17,17 +17,49 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 
     List<AnimalReport> findAllByDtCreateBetweenAndStateOrderById(PageRequest pageRequest, OffsetDateTime dtStart, OffsetDateTime dtEnd, AnimalReportStateEnum stateEnum);
 
+    /**
+     * Найти по статуту и Ид животного
+     *
+     * @param stateEnum AnimalReportStateEnum
+     * @param animalId  Long
+     * @return Optional
+     */
     Optional<AnimalReport> findFirstByStateAndAnimalOrderById(AnimalReportStateEnum stateEnum, Long animalId);
 
     Optional<AnimalReport> findFirstByAnimalAndDtCreateAfter(Long animalId, OffsetDateTime dtCreate);
 
+    /**
+     * Найти все отчёты по животному после заданной даты
+     *
+     * @param animalId Long
+     * @param dtCreate OffsetDateTime
+     * @return LinkedHashSet<AnimalReport>
+     */
     LinkedHashSet<AnimalReport> findAllByAnimalAndDtCreateAfterOrderByDtCreate(Long animalId, OffsetDateTime dtCreate);
 
+    /**
+     * Найти все отчёты по  статусу до заданной даты
+     *
+     * @param state    AnimalReportStateEnum
+     * @param dtCreate OffsetDateTime
+     * @return List<AnimalReport>
+     */
     List<AnimalReport> findAllByStateAndDtCreateBefore(AnimalReportStateEnum state, OffsetDateTime dtCreate);
 
-    @Query(value = "SELECT * FROM animal_report WHERE dt_create > CAST(now() AS DATE )", nativeQuery = true)
+    /**
+     * Найти все отчеты за сегодня
+     *
+     * @return Collection<AnimalReport>
+     */
+    @Query(value = "SELECT *\n" + "FROM animal_report\n" + "WHERE CAST(dt_create AS DATE) > CAST(now() AS DATE) - 1",
+            nativeQuery = true)
     Collection<AnimalReport> findAllForToday();
 
+    /**
+     * Найти все отчёты за 2 дня
+     *
+     * @return Collection
+     */
     @Query(value = "SELECT * FROM animal_report WHERE dt_create > now() - INTERVAL '2 DAYS'", nativeQuery = true)
     Collection<AnimalReport> findAllForTwoDays();
 }

@@ -18,6 +18,12 @@ public class MessageSender {
     private final TelegramBot bot;
     private final UserService userService;
 
+    /**
+     * Отправка сообщения и сохранение message-Id пользователю
+     * @param message Сообшение для отправки
+     * @param user User
+     * @return User
+     */
     public User sendMessage(SendMessage message, User user) {
         SendResponse execute = bot.execute(message);
         if (execute != null) {
@@ -27,7 +33,12 @@ public class MessageSender {
         log.debug("User after send and save: {}", user);
         return update;
     }
-
+    /**
+     * Отправка сообщения и сохранение message-Id пользователю
+     * @param message Сообшение для отправки
+     * @param user User
+     * @return User
+     */
     public User sendMessage(EditMessageText message, User user) {
         SendResponse execute = (SendResponse) bot.execute(message);
         if (execute != null) {
@@ -48,7 +59,10 @@ public class MessageSender {
         return update;
     }
 
-
+    /**
+     * Удаление последнего сообщения пользователя
+     * @param user User
+     */
     public void deleteOldMenu(User user) {
         if (user.getLastResponseStatemenuId() != null) {
             DeleteMessage deleteMessage = new DeleteMessage(user.getTelegramId(), user.getLastResponseStatemenuId().intValue());

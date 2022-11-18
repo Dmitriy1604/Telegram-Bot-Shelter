@@ -102,7 +102,7 @@ public class AnimalServiceImpl implements AnimalService {
     }
 
     @Override
-    public AnimalDto extendPeriod(Long id, Animal.TimeFrame timeFrame) {
+    public AnimalDto changePeriod(Long id, Animal.TimeFrame timeFrame) {
         Animal animal = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("animal doesn't exist"));
         User user = userRepository.findByTelegramId(animal.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User doesn't exist"));

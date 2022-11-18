@@ -4,9 +4,12 @@ import com.tgshelterbot.model.UserState;
 import com.tgshelterbot.model.dto.UserStateDto;
 import org.mapstruct.Mapper;
 
+/**
+ * Преобразователь из сущьностей в ДТО и обратно
+ */
 @Mapper(componentModel = "spring")
 public interface UserStateMapper {
-    public UserStateDto toDto(UserState userState);
+     UserStateDto toDto(UserState userState);
 
-    public UserState toEntity(UserStateDto userStateDto);
+     UserState toEntity(UserStateDto userStateDto);
 }

@@ -8,5 +8,11 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    /**
+     * Найти по Ид
+     *
+     * @param aLong Long
+     * @return Optional
+     */
     Optional<User> findByTelegramId(Long aLong);
 }

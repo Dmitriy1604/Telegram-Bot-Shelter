@@ -12,6 +12,13 @@ import java.util.ResourceBundle;
 public class LocalizedMessages {
     private final String resource = "message";
 
+    /**
+     * Получение сообщений по имени из файла message.properties
+     * в соответствии с выбранной локалью
+     * @param name String
+     * @param user User
+     * @return message
+     */
     @SneakyThrows
     public String get(String name, User user) {
         Locale locale;
@@ -22,7 +29,13 @@ public class LocalizedMessages {
         locale = new Locale("ru");
         return ResourceBundle.getBundle(resource, locale).getString(name);
     }
-
+    /**
+     * Получение сообщений по имени из файла message.properties
+     * в соответствии с выбранной локалью
+     * @param name String
+     * @param update Update
+     * @return message
+     */
     public String get(String name, Update update) {
         if (update.message() != null && update.message().from() != null) {
             String languageCode = update.message().from().languageCode();
