@@ -46,7 +46,7 @@ public class AnimalDecisionController {
     })
     @PutMapping("/{id}/extend_or_approve")
     public AnimalDto extendTestTimeFrame(@PathVariable Long id, @RequestParam Animal.TimeFrame timeFrame) {
-        return animalService.extendPeriod(id, timeFrame);
+        return animalService.changePeriod(id, timeFrame);
     }
 
     @Operation(summary = "Get summarised report by animal id to make a decision.")

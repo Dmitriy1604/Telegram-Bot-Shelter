@@ -155,6 +155,11 @@ public class TelegramFacade {
 
     }
 
+    /**
+     * Инициализация сообщения
+     * @param update событие на сервере
+     * @return message текст написанный в чат
+     */
     private String getMessage(Update update) {
         String message = "^-^";
         if (update.message() != null && update.message().text() != null) {

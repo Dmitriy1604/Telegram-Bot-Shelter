@@ -8,7 +8,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-
+/**
+ * Преобразователь из сущьностей в ДТО и обратно
+ */
 @Mapper(componentModel = "spring")
 public interface AnimalSimpleMapper {
     @Mapping(source = "animal.id", target = "id")

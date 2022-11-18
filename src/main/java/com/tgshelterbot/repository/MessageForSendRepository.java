@@ -8,5 +8,11 @@ import java.util.List;
 
 public interface MessageForSendRepository extends JpaRepository<MessageForSend, Long> {
 
+    /**
+     * Найти все по дате и статусу не удалён
+     *
+     * @param offsetDateTime OffsetDateTime
+     * @return List<MessageForSend>
+     */
     List<MessageForSend> findAllByDtNeedSendBeforeAndDeletedFalse(OffsetDateTime offsetDateTime);
 }

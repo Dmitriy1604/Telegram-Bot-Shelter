@@ -16,6 +16,9 @@ public class ReportRejectSchedule {
     private final TelegramBot bot;
     private final ReportService reportService;
 
+    /**
+     * Закрытие незаполненных отчётов
+     */
     // 1 сек 2 мин 9 часа каждого дня
     @Scheduled(cron = "1 2 9 * * *")
     public void runReportRejectSchedule() {

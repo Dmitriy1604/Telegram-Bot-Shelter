@@ -20,6 +20,11 @@ public class ShelterMenu {
     private final Logger log = LoggerFactory.getLogger(ShelterMenu.class);
     private final ShelterRepository shelterRepository;
 
+    /**
+     * Построение меню из списка приютов
+     * @param user User
+     * @return new SendMessage с меню
+     */
     public SendMessage getShelterMenu(@NotNull User user) {
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
 

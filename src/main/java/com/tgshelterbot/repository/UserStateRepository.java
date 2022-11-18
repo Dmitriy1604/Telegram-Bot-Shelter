@@ -10,5 +10,12 @@ import java.util.Optional;
 @Repository
 public interface UserStateRepository extends JpaRepository<UserState, Long> {
     Optional<UserState> findFirstByShelterIdAndTagSpecial(Long aLong, UserStateSpecial tag);
+
+    /**
+     * Найти по спец тэгу
+     *
+     * @param tag UserStateSpecial
+     * @return Optional
+     */
     Optional<UserState> findFirstByTagSpecial(UserStateSpecial tag);
 }

@@ -27,8 +27,16 @@ public class SupportService {
 
     private final Logger logger = LoggerFactory.getLogger(SupportService.class);
 
+    /**
+     * Отправка сообщений в чат поддержки
+     *
+     * @param update Update
+     * @param user   User
+     * @return new SendMessage
+     */
     public SendMessage sendToSupport(Update update, User user) {
-        ForwardMessage forwardMessage = new ForwardMessage(supportChat, update.message().chat().id(), update.message().messageId());
+        ForwardMessage forwardMessage =
+                new ForwardMessage(supportChat, update.message().chat().id(), update.message().messageId());
         StringBuilder sb = new StringBuilder();
         sb.append("id: ").append(update.message().chat().id()).append(",\n");
         if (user.getPhone() != null) {
@@ -38,7 +46,6 @@ public class SupportService {
             sb.append("message: ").append(update.message().text());
         }
         SendMessage message = new SendMessage(supportChat, sb.toString());
-
         if (update.message().text() == null) {
             SendResponse execute = bot.execute(forwardMessage);
             logger.info("Forward message response: {}", execute);
@@ -46,6 +53,12 @@ public class SupportService {
         return message;
     }
 
+    /**
+     * Отправка сообщения из чата поддержки пользователю
+     *
+     * @param update Update
+     * @return new SendMessage
+     */
     public SendMessage sendToUser(Update update) {
         if (update.message().replyToMessage().forwardFrom() == null) {
             logger.debug("Пользователь скрыл свой аккаунт от пересылки, из за вот этого получается весь геморрой");
@@ -66,6 +79,12 @@ public class SupportService {
                 "Ответьте на сообщение с id  пользователя");
     }
 
+    /**
+     * Проверка на то что сообщение из чата поддержки
+     *
+     * @param update Update
+     * @return boolean
+     */
     public boolean isSupportChat(Update update) {
         if (update.message() != null && update.message().chat().id() != null) {
             return update.message().chat().id().equals(supportChat);
@@ -73,6 +92,12 @@ public class SupportService {
         return false;
     }
 
+    /**
+     * Парсит текст сообщения из чата поддержки и достает Ид
+     *
+     * @param msg сообщение в чате поддержки
+     * @return Ид юзера
+     */
     public Long parseUserId(String msg) {
         // id: 1226737000,
         Pattern pattern = Pattern.compile("id: (\\d*),");

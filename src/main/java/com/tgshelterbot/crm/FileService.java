@@ -22,6 +22,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Класс для работы с файлами
+ * получение с сервера, запись
+ */
 @Service
 @Slf4j
 public class FileService {
@@ -40,22 +44,35 @@ public class FileService {
         this.userService = userService;
     }
 
+    /**
+     * Получение  ссылки на файл с сервера телеграм и вызов
+     * меода для сохранения файла на диск
+     *
+     * @param update - событие на сервере
+     * @return String filePath - путь к файлу
+     */
     public String getLocalPathTelegramFile(Update update) {
         String fileId = getTelegramFileId(update);
         if (fileId == null) {
             return null;
         }
-
         GetFileResponse getFileResponse = bot.execute(new GetFile(fileId));
         File file = getFileResponse.file(); // com.pengrad.telegrambot.model.File
         FileApi fileApi = new FileApi(token);
-
         String fullFilePath = fileApi.getFullFilePath(file.filePath());
         return saveFile(fullFilePath, update);
     }
 
+    /**
+     * Получение Id файла из события на сервере
+     *
+     * @param update событие
+     * @return String fileId
+     */
     public String getTelegramFileId(Update update) {
-        if (update.message() != null && update.message().document() != null && update.message().document().fileId() != null) {
+        if (update.message() != null &&
+                update.message().document() != null &&
+                update.message().document().fileId() != null) {
             return update.message().document().fileId();
         }
         if (update.message().photo() != null) {
@@ -66,6 +83,13 @@ public class FileService {
         return null;
     }
 
+    /**
+     * Сохранение файла не диск
+     *
+     * @param urlPath путь до файла на сервере
+     * @param update  событие на сервере
+     * @return String filePath - путь к файлу на диске
+     */
     @SneakyThrows
     public String saveFile(String urlPath, Update update) {
         // https://www.baeldung.com/java-download-file#using-nio
@@ -87,7 +111,13 @@ public class FileService {
         return pathFile;
     }
 
-
+    /**
+     * Создание директорий и названия файла на диске
+     *
+     * @param urlPath путь до файла на сервере
+     * @param update  событие на сервере
+     * @return filePath путь к файлу на диске
+     */
     public String getFullLocalPathFile(String urlPath, Update update) {
         String pathFile = "";
         try {
@@ -98,7 +128,6 @@ public class FileService {
                 directory.mkdirs();
             }
             pathFile = pathFile + separator + getFileName(urlPath);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,6 +135,12 @@ public class FileService {
         return pathFile;
     }
 
+    /**
+     * Получение имени файла с сервера телеграм
+     *
+     * @param path путь до файла на сервере
+     * @return fileName имя файла
+     */
     public String getFileName(String path) {
         String separator = "/";
         if (path.startsWith("http")) {
@@ -116,6 +151,12 @@ public class FileService {
         return path.substring(path.lastIndexOf(separator) + 1);
     }
 
+    /**
+     * Чтение файла с диска
+     *
+     * @param localPath путь до файла на диске
+     * @return массив байт
+     */
     @SneakyThrows
     public byte[] getLocalFile(String localPath) {
         return Files.readAllBytes(Path.of(localPath));
@@ -136,5 +177,4 @@ public class FileService {
     public SendDocument sendDocument(long idUser, String localPath, String description) {
         return new SendDocument(idUser, getLocalFile(localPath)).fileName(getFileName(localPath)).caption(description);
     }
-
 }
