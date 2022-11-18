@@ -70,10 +70,13 @@ public class AnimalServiceImpl implements AnimalService {
 
     @Override
     public AnimalDto update(Long id, AnimalDto dto) {
-        Animal original = repository.findById(id).orElseThrow(EntityNotFoundException::new);
-        shelterRepository.findById(dto.getShelterId()).orElseThrow(EntityNotFoundException::new);
-        userRepository.findByTelegramId(dto.getUserId()).orElseThrow(EntityNotFoundException::new);
-        AnimalType animalType = animalTypeRepository.findById(dto.getId()).orElseThrow(EntityNotFoundException::new);
+        Animal original = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Animal not found"));
+        shelterRepository.findById(dto.getShelterId())
+                .orElseThrow(() -> new EntityNotFoundException("Shelter not " + "found"));
+//        userRepository.findByTelegramId(dto.getUserId())
+//                .orElseThrow(() -> new EntityNotFoundException("User Id not found"));
+        AnimalType animalType = animalTypeRepository.findById(dto.getAnimalTypeId())
+                .orElseThrow(() -> new EntityNotFoundException("Animal Type not found"));
         Animal update = animalMapper.toEntity(dto);
         update.setId(id);
         update.setDtCreate(original.getDtCreate());
