@@ -6,9 +6,9 @@ import com.pengrad.telegrambot.request.ForwardMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
 import com.tgshelterbot.model.User;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +19,11 @@ import java.util.regex.Pattern;
  * telegram.bot.support.chat =  заполнить id  чата поддержки, добавить бота в чат, сделать админом
  */
 @Service
+@RequiredArgsConstructor
 public class SupportService {
-    @Autowired
-    private TelegramBot bot;
+    private final TelegramBot bot;
     @Value("${telegram.bot.support.chat}")
-    private Long supportChat;
+    private final Long supportChat;
 
     private final Logger logger = LoggerFactory.getLogger(SupportService.class);
 

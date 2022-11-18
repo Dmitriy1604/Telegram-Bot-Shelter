@@ -27,8 +27,6 @@ public class ReportService {
 
     private final AnimalReportRepository animalReportRepository;
     private final AnimalReportDataRepository animalReportDataRepository;
-    private final AnimalReportSetupRepository animalReportSetupRepository;
-    private final AnimalReportSetupReportTypeRepository animalReportSetupReportTypeRepository;
     private final AnimalReportTypeRepository animalReportTypeRepository;
     private final AnimalRepository animalRepository;
     private final MessageForSendRepository messageForSendRepository;
@@ -43,6 +41,7 @@ public class ReportService {
 
     /**
      * Поиск всех животного у пользователя
+     *
      * @param user User
      * @return Animal
      */
@@ -52,10 +51,6 @@ public class ReportService {
                 .filter(animal -> animal.getState().equals(Animal.AnimalStateEnum.IN_TEST))
                 .findFirst();
         return animalOptional.orElse(null);
-    }
-
-    public LinkedHashSet<AnimalReportType> getAnimalReportType() {
-        return null;
     }
 
     //Обработка отчетов, была нажата кнопка с типом отчета

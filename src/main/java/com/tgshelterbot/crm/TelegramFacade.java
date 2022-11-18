@@ -38,7 +38,6 @@ public class TelegramFacade {
     private final ShelterMenu shelterMenu;
     private final InlineMenuRepository inlineMenuRepository;
     private final UserStateRepository userStateRepository;
-    private final ReportService reportService;
     private final LocalizedMessages lang;
 
 
@@ -157,6 +156,7 @@ public class TelegramFacade {
 
     /**
      * Инициализация сообщения
+     *
      * @param update событие на сервере
      * @return message текст написанный в чат
      */
