@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - include:
+      file: liquibase/sql/1_main.sql
+  - include:
+      file: liquibase/sql/2_dog_data.sql
+  - include:
+      file: liquibase/sql/3_cat_data.sql
+  - include:
+      file: liquibase/sql/100_user_state_and_inline_menu.sql
+  - include:
+      file: liquibase/sql/101_triggers.sql
+  - include:
+      file: liquibase/sql/corrections_2_3.sql
+  - include:
+      file: liquibase/sql/110_Animals_Reports.sql
+  - include:
+      file: liquibase/sql/111_fill.sql
+  - include:
+      file: liquibase/sql/120_animal_report_add_column.sql
+  - include:
+      file: liquibase/sql/130_message_for_send.sql
+  - include:
+      file: liquibase/sql/140_Animal_report.sql
